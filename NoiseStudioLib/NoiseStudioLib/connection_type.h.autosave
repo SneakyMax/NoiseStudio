@@ -1,0 +1,13 @@
+#ifndef CONNECTION_TYPE_H
+#define CONNECTION_TYPE_H
+
+namespace noises
+{
+    class ConnectionType
+    {
+    private:
+        ConnectionType();
+    };
+}
+
+#endif // CONNECTION_TYPE_H

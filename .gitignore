@@ -1,0 +1,10 @@
+/NoiseStudio/NoiseStudio/*.user
+/NoiseStudio/build
+/NoiseStudioLib/NoiseStudioLib/build-NoiseStudioLib-Desktop_Qt_5_3_MinGW_32bit-Debug
+/NoiseStudioLib/NoiseStudioLib/build-NoiseStudioLib-Desktop_Qt_5_3_MinGW_32bit-Release
+/NoiseStudioLib-Tests/build-NoiseStudioLib-Tests-Desktop_Qt_5_3_MinGW_32bit-Debug
+/NoiseStudioLib/boost
+/NoiseStudio/NoiseStudio/build
+/NoiseStudio/NoiseStudio/build-NoiseStudio-Desktop_Qt_5_3_MinGW_32bit-Debug
+/NoiseStudioLib-Tests/*.user
+/NoiseStudioLib/NoiseStudioLib/*.user

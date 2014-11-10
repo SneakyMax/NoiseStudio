@@ -1,0 +1,1 @@
+windeployqt --qmldir . ./build/release/NoiseStudio.exe
