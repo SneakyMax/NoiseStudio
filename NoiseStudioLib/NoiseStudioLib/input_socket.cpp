@@ -13,4 +13,14 @@ namespace noises
     {
         return accepted_types_.supports(type);
     }
+
+    const Connection* InputSocket::connection() const
+    {
+        return connection_;
+    }
+
+    void InputSocket::set_connection(const Connection* connection)
+    {
+        connection_ = connection;
+    }
 }

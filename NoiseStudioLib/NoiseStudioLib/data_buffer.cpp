@@ -101,6 +101,11 @@ namespace noises
         return attribute_data_types_[index].get();
     }
 
+    const ConnectionDataType& DataBuffer::get_uniform_type(int index) const
+    {
+        return uniform_data_types_[index].get();
+    }
+
     DataBuffer::size_type DataBuffer::num_uniforms() const
     {
         return uniform_data_types_.size();
@@ -109,5 +114,15 @@ namespace noises
     DataBuffer::size_type DataBuffer::allocated_uniform_memory() const
     {
         return uniform_memory_block_.size();
+    }
+
+    const std::vector<unsigned char>& DataBuffer::get_memory_block(int index) const
+    {
+        return attribute_memory_blocks_[index];
+    }
+
+    const unsigned char* DataBuffer::get_uniform_block(int index) const
+    {
+        return &(uniform_memory_block_[get_uniform_index(index)]);
     }
 }

@@ -13,7 +13,8 @@ SOURCES += \
     socket.cpp \
     accepted_types.cpp \
     nodes/perlin_noise.cpp \
-    data_buffer.cpp
+    data_buffer.cpp \
+    composite_data_buffer.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
@@ -22,7 +23,6 @@ HEADERS += \
     graph.h \
     graph_node.h \
     connection_data_type.h \
-    dimensions.h \
     connection.h \
     input_socket.h \
     output_socket.h \
@@ -31,7 +31,8 @@ HEADERS += \
     nodes/perlin_noise.h \
     socket_collection.h \
     data_buffer.h \
-    socket_type.h
+    socket_type.h \
+    composite_data_buffer.h
 
 header_files.path = $$OUT_PWD/lib
 header_files.files = $$HEADERS

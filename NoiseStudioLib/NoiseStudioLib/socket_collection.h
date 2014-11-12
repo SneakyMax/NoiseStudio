@@ -62,6 +62,9 @@ namespace noises
 
         typedef std::vector<std::unique_ptr<TSocket>> list_t;
 
+        list_t& attribute_sockets() { return attribute_sockets_; }
+        list_t& uniform_sockets() { return uniform_sockets_; }
+
         const list_t& attribute_sockets() const { return attribute_sockets_; }
         const list_t& uniform_sockets() const { return uniform_sockets_; }
 

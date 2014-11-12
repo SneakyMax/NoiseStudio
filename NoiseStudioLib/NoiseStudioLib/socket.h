@@ -18,14 +18,13 @@ namespace noises
         bool optional() const;
         void set_optional(bool optional);
 
-        Connection* connection() const;
-        void set_connection(Connection* connection);
-        void remove_connection();
-
         unsigned int index() const;
         void set_index(int index);
 
         SocketType type() const;
+
+        Socket(const Socket&) = delete;
+        Socket& operator=(const Socket&) = delete;
 
     protected:
         Socket(const std::string& name, SocketType type);
@@ -35,8 +34,6 @@ namespace noises
         bool optional_;
         unsigned int index_;
         SocketType type_;
-
-        std::shared_ptr<Connection> connection_;
     };
 }
 

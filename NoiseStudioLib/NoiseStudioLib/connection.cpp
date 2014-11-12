@@ -5,34 +5,24 @@
 
 namespace noises
 {
-    bool Connection::is_valid() const
-    {
-        return has_input_output() && input_output_type_compatible();
-    }
-
-    bool Connection::has_input_output() const
-    {
-        return input_.lock() && output_.lock();
-    }
-
     bool Connection::input_output_type_compatible() const
     {
-        std::shared_ptr<OutputSocket> output = output_.lock();
-        std::shared_ptr<InputSocket> input = input_.lock();
-
-        if(!input || !output)
-            return false;
-
-        return input->accepts(output->data_type());
+        return input_.accepts(output_.data_type());
     }
 
-    void Connection::set_input(const std::shared_ptr<InputSocket>& socket)
+    const InputSocket& Connection::input() const
     {
-        input_ = socket;
+        return input_;
     }
 
-    void Connection::set_output(const std::shared_ptr<OutputSocket>& socket)
+    const OutputSocket& Connection::output() const
     {
-        output_ = socket;
+        return output_;
+    }
+
+    void Connection::disconnect()
+    {
+        input_.set_connection(nullptr);
+        output_.remove_connection(*this);
     }
 }

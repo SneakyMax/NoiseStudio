@@ -3,7 +3,7 @@
 namespace noises
 {
     Socket::Socket(const std::string& name, SocketType type)
-        : name_(name), optional_(false), index_(0), connection_(), type_(type)
+        : name_(name), optional_(false), index_(0), type_(type)
     {
 
     }
@@ -26,21 +26,6 @@ namespace noises
     void Socket::set_optional(bool optional)
     {
         optional_ = optional;
-    }
-
-    Connection* Socket::connection() const
-    {
-        return connection_.get();
-    }
-
-    void Socket::set_connection(Connection *connection)
-    {
-        connection_.reset(connection);
-    }
-
-    void Socket::remove_connection()
-    {
-        connection_.reset();
     }
 
     unsigned int Socket::index() const

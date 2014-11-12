@@ -3,6 +3,7 @@
 
 #include "accepted_types.h"
 #include "socket.h"
+#include "connection.h"
 
 namespace noises
 {
@@ -15,8 +16,13 @@ namespace noises
 
         void set_accepts(const ConnectionDataType& type);
         bool accepts(const ConnectionDataType& type) const;
+
+        const Connection* connection() const;
+        void set_connection(const Connection* connection);
+
     private:
         AcceptedTypes accepted_types_;
+        const Connection* connection_;
     };
 }
 

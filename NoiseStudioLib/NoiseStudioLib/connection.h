@@ -11,22 +11,22 @@ namespace noises
     class Connection
     {
     public:
-        // Gets whether the connection is valid (has an input and output, and the input accepts the value type of the output)
-        // the connection should be deleted
-        bool is_valid() const;
+        Connection(InputSocket& input, OutputSocket& output)
+            : input_(input), output_(output) { }
 
         bool input_output_type_compatible() const;
-        bool has_input_output() const;
 
-        void set_input(const std::shared_ptr<InputSocket>& socket);
-        void set_output(const std::shared_ptr<OutputSocket>& socket);
+        const InputSocket& input() const;
+        const OutputSocket& output() const;
+
+        void disconnect();
     private:
 
         // The input is generally the *right* side of a connection
-        std::weak_ptr<InputSocket> input_;
+        InputSocket& input_;
 
         // The output is generally the *left* side of a connection
-        std::weak_ptr<OutputSocket> output_;
+        OutputSocket& output_;
     };
 }
 
