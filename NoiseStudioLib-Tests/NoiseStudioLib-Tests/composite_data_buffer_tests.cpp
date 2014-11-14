@@ -111,8 +111,8 @@ TEST_CASE("Multiple attributes flip-flop")
     inputs.add(std::unique_ptr<InputSocket>(
         new InputSocket("a", SocketType::Attribute)));
 
-    inputs.get_by_name("b").set_accepts(ConnectionDataType::value<float, 2>());
-    inputs.get_by_name("a").set_accepts(ConnectionDataType::value<int, 2>());
+    inputs["b"].set_accepts(ConnectionDataType::value<float, 2>());
+    inputs["a"].set_accepts(ConnectionDataType::value<int, 2>());
 
     int n = 4;
     DataBuffer d(n);
@@ -125,8 +125,8 @@ TEST_CASE("Multiple attributes flip-flop")
         int int_data[] = { i, i * 10 };
         float float_data[] = { i + 0.5f, (i * 10) + 0.5f };
 
-        d.set_attribute<int, 2>(outputs.get_by_name("a"), i, int_data);
-        d.set_attribute<float, 2>(outputs.get_by_name("b"), i, float_data);
+        d.set_attribute<int, 2>(outputs["a"], i, int_data);
+        d.set_attribute<float, 2>(outputs["b"], i, float_data);
     }
 
     c.add_attribute(ConnectionDataType::value<float, 2>(), d.get_memory_block(1));
@@ -134,8 +134,8 @@ TEST_CASE("Multiple attributes flip-flop")
 
     for(int i = 0; i < n; i++)
     {
-        const float* float_data_ret = c.get_attribute<float, 2>(inputs.get_by_name("b"), i);
-        const int* int_data_ret = c.get_attribute<int, 2>(inputs.get_by_name("a"), i);
+        const float* float_data_ret = c.get_attribute<float, 2>(inputs["b"], i);
+        const int* int_data_ret = c.get_attribute<int, 2>(inputs["a"], i);
 
         REQUIRE(float_data_ret[0] == i + 0.5f);
         REQUIRE(float_data_ret[1] == (i * 10) + 0.5f);

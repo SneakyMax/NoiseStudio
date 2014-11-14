@@ -1,5 +1,6 @@
 #include "accepted_types.h"
 #include "connection_data_type.h"
+#include "utils.h"
 
 namespace noises
 {
@@ -12,17 +13,7 @@ namespace noises
 
     void AcceptedTypes::remove(const ConnectionDataType& data_type)
     {
-        std::vector<std::reference_wrapper<const ConnectionDataType>>::iterator it;
-        for(it = supported_types_.begin(); it != supported_types_.end(); ++it)
-        {
-            if(ConnectionDataType::equals(*it, data_type))
-                break;
-        }
-
-        if(it != supported_types_.end())
-        {
-            supported_types_.erase(it);
-        }
+        utils::remove_by_pointer(supported_types_, &data_type);
     }
 
     bool AcceptedTypes::supports(const ConnectionDataType& data_type) const

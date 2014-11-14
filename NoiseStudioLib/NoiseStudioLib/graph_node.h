@@ -3,14 +3,18 @@
 
 #include <vector>
 #include <functional>
+
 #include "socket_collection.h"
 #include "data_buffer.h"
 #include "input_socket.h"
 #include "output_socket.h"
+#include "property_collection.h"
+#include "attrbute_info.h"
 
 namespace noises
 {
     class CompositeDataBuffer;
+    class Property;
 
     class GraphNode
     {
@@ -40,15 +44,42 @@ namespace noises
         int id() const;
         void set_id(int id);
 
+        const std::vector<std::reference_wrapper<Property>> properties();
+        const std::vector<std::reference_wrapper<const Property>> properties() const;
+
+        boost::optional<std::reference_wrapper<Property>> get_property_by_name(const std::string& name);
+        boost::optional<std::reference_wrapper<const Property>> get_property_by_name(const std::string &name) const;
+
     protected:
+        template<typename T, unsigned int Dimensions>
+        Property& add_property(const std::string& name)
+        {
+            return properties_.add<T, Dimensions>(name);
+        }
+
+        void remove_property(const Property& property);
+
+        /** Overrides the attribute length for a node. This will mean that execute_attributes will be called new_length times instead
+         * of the length of the attributes passed into the node. Use this to, for example, change the size of an image.  **/
+        void override_attribute_info(AttributeInfo info);
+
+        /** Called when a connection is changed for a socket, a property is changed or added or removed, or the node is added to the graph.
+         *  Use this to calculate socket output types (for example when they're dependent on the input type). **/
+        virtual void recalculate_sockets();
+
+    private:
+        void recalculate_sockets_internal();
+
         SocketCollection<InputSocket> inputs_;
         SocketCollection<OutputSocket> outputs_;
 
+        PropertyCollection properties_;
+
         std::string name_;
         int id_;
+        AttributeInfo attribute_override_;
+        bool in_recalculate_sockets_;
     };
 }
-
-
 
 #endif // GRAPH_NODE_H

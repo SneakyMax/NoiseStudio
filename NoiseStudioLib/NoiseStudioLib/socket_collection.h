@@ -3,7 +3,10 @@
 
 #include <vector>
 #include <memory>
+#include <boost/optional.hpp>
+
 #include "socket_type.h"
+#include "connection_data_type.h"
 
 namespace noises
 {
@@ -13,6 +16,22 @@ namespace noises
     public:
         SocketCollection() {}
         SocketCollection(const SocketCollection&) = delete;
+
+        TSocket& add(const std::string& name, SocketType type)
+        {
+            std::unique_ptr<TSocket> socket(new TSocket(name, type));
+            TSocket& ref = *socket; // This works because the *unique_ptr* is moved, but the TSocket remains at the same memory location
+            add(std::move(socket));
+            return ref;
+        }
+
+        TSocket& add(const std::string& name, const ConnectionDataType& data_type, SocketType type)
+        {
+            std::unique_ptr<TSocket> socket(new TSocket(name, data_type, type));
+            TSocket& ref = *socket;
+            add(std::move(socket));
+            return ref;
+        }
 
         void add(std::unique_ptr<TSocket> socket)
         {
@@ -43,21 +62,34 @@ namespace noises
             }
         }
 
-        TSocket& get_by_name(const std::string& name)
+        boost::optional<std::reference_wrapper<TSocket>> get_by_name(const std::string& name)
         {
-            for(auto it = attribute_sockets_.begin(); it != attribute_sockets_.end(); ++it)
+            for(auto& ptr : attribute_sockets_)
             {
-                if((*it)->name() == name)
-                    return **it;
+                if(ptr->name() == name)
+                    return std::ref(*ptr);
             }
 
-            for(auto it = uniform_sockets_.begin(); it != attribute_sockets_.end(); ++it)
+            for(auto& ptr : uniform_sockets_)
             {
-                if((*it)->name() == name)
-                    return **it;
+                if(ptr->name() == name)
+                    return std::ref(*ptr);
             }
 
-            throw std::logic_error("Could not find socket named " + name);
+            return boost::none;
+        }
+
+        TSocket& operator[](const std::string& name)
+        {
+            auto socket = get_by_name(name);
+            if(!socket)
+                throw std::invalid_argument(name + " is not a valid socket.");
+            return socket.get().get();
+        }
+
+        TSocket& operator[](const char* name)
+        {
+            return (*this)[static_cast<std::string>(name)];
         }
 
         typedef std::vector<std::unique_ptr<TSocket>> list_t;

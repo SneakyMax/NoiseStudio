@@ -60,7 +60,7 @@ TEST_CASE("Testing DataBuffer", "")
 
         for(int i = 0; i < n; i++)
         {
-            const int* value = d.get_attribute<int, 1>(socket, i);
+            auto value = d.get_attribute<int, 1>(socket, i);
             REQUIRE(*value == i);
         }
     }
@@ -81,7 +81,7 @@ TEST_CASE("Testing DataBuffer", "")
 
         for(int i = 0; i < n; i++)
         {
-            const int* value = d.get_attribute<int, 3>(socket, i);
+            auto value = d.get_attribute<int, 3>(socket, i);
             REQUIRE(value[0] == i);
             REQUIRE(value[1] == i * 10);
             REQUIRE(value[2] == i * 100);
@@ -109,14 +109,14 @@ TEST_CASE("Testing DataBuffer", "")
             float positions[] = { static_cast<float>(i), static_cast<float>(i * 10), static_cast<float>(i * 100) };
             unsigned char colors[] = { (unsigned char)i, (unsigned char)i, (unsigned char)i };
 
-            d.set_attribute<float, 3>(sockets.get_by_name("position"), i, positions);
-            d.set_attribute<unsigned char, 3>(sockets.get_by_name("color"), i, colors);
+            d.set_attribute<float, 3>(sockets["position"], i, positions);
+            d.set_attribute<unsigned char, 3>(sockets["color"], i, colors);
         }
 
         for(int i = 0; i < n; i++)
         {
-            const float* positions = d.get_attribute<float, 3>(sockets.get_by_name("position"), i);
-            const unsigned char* colors = d.get_attribute<unsigned char, 3>(sockets.get_by_name("color"), i);
+            auto positions = d.get_attribute<float, 3>(sockets["position"], i);
+            auto colors = d.get_attribute<unsigned char, 3>(sockets["color"], i);
 
             REQUIRE(positions[0] == i);
             REQUIRE(positions[1] == i * 10);
@@ -139,7 +139,7 @@ TEST_CASE("Testing DataBuffer", "")
 
         d.set_uniform<int, 3>(socket, values);
 
-        const int* values_returned = d.get_uniform<int, 3>(socket);
+        auto values_returned = d.get_uniform<int, 3>(socket);
 
         REQUIRE(values_returned[0] == 1);
         REQUIRE(values_returned[1] == 2);
@@ -162,13 +162,13 @@ TEST_CASE("Testing DataBuffer", "")
         d.add(sockets);
 
         int a[] = { 1, 2 };
-        d.set_uniform<int, 2>(sockets.get_by_name("a"), a);
+        d.set_uniform<int, 2>(sockets["a"], a);
 
         float b = 1.5;
-        d.set_uniform<float, 1>(sockets.get_by_name("b"), &b);
+        d.set_uniform<float, 1>(sockets["b"], &b);
 
-        const int* a_ret = d.get_uniform<int, 2>(sockets.get_by_name("a"));
-        const float* b_ret = d.get_uniform<float, 1>(sockets.get_by_name("b"));
+        auto a_ret = d.get_uniform<int, 2>(sockets["a"]);
+        auto b_ret = d.get_uniform<float, 1>(sockets["b"]);
 
         REQUIRE(a_ret[0] == 1);
         REQUIRE(a_ret[1] == 2);

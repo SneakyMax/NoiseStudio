@@ -1,4 +1,5 @@
 #include "graph.h"
+#include "utils.h"
 
 namespace noises
 {
@@ -28,15 +29,7 @@ namespace noises
         for(auto& socket : node->outputs().uniform_sockets())
             disconnect_all(*socket);
 
-        // Remove the node from the list
-        auto it = nodes_.begin();
-        for(; it != nodes_.end(); ++it)
-        {
-            if(it->get() == node)
-                break;
-        }
-        if(it != nodes_.end())
-            nodes_.erase(it);
+        utils::remove_by_pointer(nodes_, node);
     }
 
     std::vector<GraphNode*> Graph::get_nodes_by_node_name(const std::string &name) const
@@ -50,24 +43,24 @@ namespace noises
         return return_list;
     }
 
-    GraphNode* Graph::get_node_by_name(const std::string &name) const
+    boost::optional<std::reference_wrapper<GraphNode>> Graph::get_node_by_name(const std::string &name) const
     {
         for(auto& node : nodes_)
         {
             if(node->name() == name)
-                return node.get();
+                return std::ref(*node);
         }
-        return nullptr;
+        return boost::none;
     }
 
-    GraphNode* Graph::get_node_by_id(int id) const
+    boost::optional<std::reference_wrapper<GraphNode>> Graph::get_node_by_id(int id) const
     {
         for(auto& node : nodes_)
         {
             if(node->id() == id)
-                return node.get();
+                return std::ref(*node);
         }
-        return nullptr;
+        return boost::none;
     }
 
     void Graph::connect(OutputSocket& output, InputSocket& input)
@@ -114,5 +107,35 @@ namespace noises
         }
         if(it != connections_.end())
             connections_.erase(it);
+    }
+
+    void Graph::remove_property(const std::string &name)
+    {
+        properties_.remove(name);
+    }
+
+    boost::optional<std::reference_wrapper<Property>> Graph::get_property_by_name(const std::string &name)
+    {
+        return properties_.get_property_by_name(name);
+    }
+
+    SocketCollection<InputSocket>& Graph::inputs()
+    {
+        return inputs_;
+    }
+
+    SocketCollection<OutputSocket>& Graph::outputs()
+    {
+        return outputs_;
+    }
+
+    InputSocket& Graph::add_input(const std::string &name, SocketType type)
+    {
+        return inputs_.add(name, type);
+    }
+
+    OutputSocket& Graph::add_output(const std::string &name, const ConnectionDataType &data_type, SocketType type)
+    {
+        return outputs_.add(name, data_type, type);
     }
 }

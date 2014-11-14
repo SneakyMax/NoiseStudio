@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "output_socket.h"
+#include "ptr_array.h"
 
 namespace noises
 {
@@ -36,34 +37,30 @@ namespace noises
 
         /** Gets an attribute value of a socket. {index} is the attribute index.  **/
         template<typename T, unsigned int Dimensions>
-        const T* get_attribute(const OutputSocket& socket, size_type index) const
+        const ptr_array<T, Dimensions> get_attribute(const OutputSocket& socket, size_type index) const
         {
-            const unsigned char* ptr = get_attribute_internal(socket, ConnectionDataType::value<T, Dimensions>(), index);
-            return reinterpret_cast<const T*>(ptr);
+            return get_attribute_raw(socket, ConnectionDataType::value<T, Dimensions>(), index);
         }
 
         /** Sets an attribute value of a socket. {index} is the attribute index. {value} must be an array of {Dimensions} size. **/
         template<typename T, unsigned int Dimensions>
-        void set_attribute(const OutputSocket& socket, size_type index, const T* value)
+        void set_attribute(const OutputSocket& socket, size_type index, const ptr_array<T, Dimensions> ptr)
         {
-            const unsigned char* ptr = reinterpret_cast<const unsigned char*>(value);
-            set_attribute_internal(socket, ConnectionDataType::value<T, Dimensions>(), index, ptr);
+            set_attribute_raw(socket, ConnectionDataType::value<T, Dimensions>(), index, ptr.raw());
         }
 
         /** Gets the value of the uniform for the socket. **/
         template<typename T, unsigned int Dimensions>
-        const T* get_uniform(const OutputSocket& socket) const
+        const ptr_array<T, Dimensions> get_uniform(const OutputSocket& socket) const
         {
-            const unsigned char* ptr = get_uniform_internal(socket, ConnectionDataType::value<T, Dimensions>());
-            return reinterpret_cast<const T*>(ptr);
+            return get_uniform_raw(socket, ConnectionDataType::value<T, Dimensions>());
         }
 
         /** Sets the value of the uniform for the socket. {value} must be an array of {Dimensions} size. **/
         template<typename T, unsigned int Dimensions>
-        void set_uniform(const OutputSocket& socket, const T* value)
+        void set_uniform(const OutputSocket& socket, const ptr_array<T, Dimensions> ptr)
         {
-            const unsigned char* ptr = reinterpret_cast<const unsigned char*>(value);
-            set_uniform_internal(socket, ConnectionDataType::value<T, Dimensions>(), ptr);
+            set_uniform_raw(socket, ConnectionDataType::value<T, Dimensions>(), ptr.raw());
         }
 
 
@@ -97,13 +94,13 @@ namespace noises
         /** Gets a pointer to the first member of a data block containing uniform data. Used by a Connection to create a CompositeDataBuffer. **/
         const unsigned char* get_uniform_block(int index) const;
 
+        const unsigned char* get_attribute_raw(const OutputSocket& socket, const ConnectionDataType& should_equal, size_type index) const;
+        void set_attribute_raw(const OutputSocket& socket, const ConnectionDataType& should_equal, size_type index, const unsigned char* value);
+
+        const unsigned char* get_uniform_raw(const OutputSocket& socket, const ConnectionDataType& should_equal) const;
+        void set_uniform_raw(const OutputSocket& socket, const ConnectionDataType& should_equal, const unsigned char* value);
+
     private:
-        const unsigned char* get_attribute_internal(const OutputSocket& socket, const ConnectionDataType& should_equal, size_type index) const;
-        void set_attribute_internal(const OutputSocket& socket, const ConnectionDataType& should_equal, size_type index, const unsigned char* value);
-
-        const unsigned char* get_uniform_internal(const OutputSocket& socket, const ConnectionDataType& should_equal) const;
-        void set_uniform_internal(const OutputSocket& socket, const ConnectionDataType& should_equal, const unsigned char* value);
-
         size_type get_uniform_index(int index) const;
 
         std::vector<std::reference_wrapper<const ConnectionDataType>> attribute_data_types_;

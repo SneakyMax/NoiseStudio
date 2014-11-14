@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <boost/optional.hpp>
 
 #include "graph_node.h"
 
@@ -24,10 +25,10 @@ namespace noises
         std::vector<GraphNode*> get_nodes_by_node_name(const std::string& name) const;
 
         /** Gets a graph node by its unique name. **/
-        GraphNode* get_node_by_name(const std::string& name) const;
+        boost::optional<std::reference_wrapper<GraphNode>> get_node_by_name(const std::string& name) const;
 
         /** Gets a graph node by its id. **/
-        GraphNode* get_node_by_id(int id) const;
+        boost::optional<std::reference_wrapper<GraphNode>> get_node_by_id(int id) const;
 
 
         /** Connects the output sockets of one graph node to the input sockets of another graph node. **/
@@ -39,6 +40,21 @@ namespace noises
         /** Disconnects all connections coming out of an output socket. **/
         void disconnect_all(OutputSocket& output);
 
+        template<typename T, unsigned int Dimensions>
+        Property& add_property(const std::string& name)
+        {
+            return properties_.add<T, Dimensions>(name);
+        }
+
+        void remove_property(const std::string& name);
+        boost::optional<std::reference_wrapper<Property>> get_property_by_name(const std::string& name);
+
+        SocketCollection<InputSocket>& inputs();
+        SocketCollection<OutputSocket>& outputs();
+
+        InputSocket& add_input(const std::string& name, SocketType type);
+        OutputSocket& add_output(const std::string& name, const ConnectionDataType& data_type, SocketType type);
+
     private:
         void remove_connection(const Connection* connection);
 
@@ -46,6 +62,10 @@ namespace noises
 
         std::vector<std::unique_ptr<GraphNode>> nodes_;
         std::vector<std::unique_ptr<Connection>> connections_;
+
+        SocketCollection<InputSocket> inputs_;
+        SocketCollection<OutputSocket> outputs_;
+        PropertyCollection properties_;
     };
 }
 

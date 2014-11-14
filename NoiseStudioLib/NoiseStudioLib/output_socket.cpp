@@ -1,4 +1,5 @@
 #include "output_socket.h"
+#include "utils.h"
 
 namespace noises
 {
@@ -28,13 +29,6 @@ namespace noises
 
     void OutputSocket::remove_connection(const Connection& connection)
     {
-        auto it = connections_.begin();
-        for(; it != connections_.end(); it++)
-        {
-            if(&((*it).get()) == &connection)
-                break;
-        }
-        if(it != connections_.end())
-            connections_.erase(it);
+        utils::remove_by_pointer(connections_, const_cast<Connection*>(&connection));
     }
 }

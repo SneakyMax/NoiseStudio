@@ -1,0 +1,26 @@
+const T& at(std::size_t pos) const
+{
+    if(!(pos >= 0 && pos < this->size()))
+        throw std::out_of_range("Pos out of range");
+    return ptr_[pos];
+}
+
+const T& operator[](std::size_t pos) const
+{
+    return ptr_[pos];
+}
+
+const T* ptr() const
+{
+    return ptr_;
+}
+
+const T* operator&() const
+{
+    return ptr_;
+}
+
+const unsigned char* raw() const
+{
+    return reinterpret_cast<const unsigned char*>(ptr_);
+}
