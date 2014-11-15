@@ -52,6 +52,8 @@ namespace noises
                 attribute_sockets_.push_back(std::move(socket));
                 socket_ref.set_index(attribute_sockets_.size() - 1);
             }
+
+            socket_ref.listen_changed([&socket_ref, this]() { socket_changed(socket_ref); });
         }
 
         void remove(const TSocket* socket)
@@ -138,11 +140,26 @@ namespace noises
         GraphNode* parent() { return parent_; }
         const GraphNode* parent() const { return parent_; }
 
+        void listen_socket_changed(std::function<void(const TSocket&)> handler)
+        {
+            listeners_.push_back(handler);
+        }
+
     private:
+        void socket_changed(const TSocket& socket)
+        {
+            for(std::function<void(const TSocket&)> handler : listeners_)
+            {
+                handler(socket);
+            }
+        }
+
         std::vector<std::unique_ptr<TSocket>> attribute_sockets_;
         std::vector<std::unique_ptr<TSocket>> uniform_sockets_;
 
         GraphNode* parent_;
+
+        std::vector<std::function<void(const TSocket&)>> listeners_;
     };
 }
 

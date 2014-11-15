@@ -15,6 +15,7 @@ namespace noises
 
     void Socket::set_name(const std::string& name)
     {
+        trigger_changed();
         name_ = name;
     }
 
@@ -25,6 +26,7 @@ namespace noises
 
     void Socket::set_index(int index)
     {
+        trigger_changed();
         index_ = index;
     }
 
@@ -46,5 +48,19 @@ namespace noises
     void Socket::set_parent(GraphNode *parent)
     {
         parent_ = parent;
+        trigger_changed();
+    }
+
+    void Socket::trigger_changed() const
+    {
+        for(std::function<void()> handler : listeners_)
+        {
+            handler();
+        }
+    }
+
+    void Socket::listen_changed(std::function<void ()> handler)
+    {
+        listeners_.push_back(handler);
     }
 }

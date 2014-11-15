@@ -2,11 +2,13 @@
 
 namespace noises
 {
-    InputSocket::InputSocket(const std::string& name, SocketType type) : Socket(name, type), optional_(false), connection_(nullptr) { }
+    InputSocket::InputSocket(const std::string& name, SocketType type) :
+        Socket(name, type), optional_(false), connection_(nullptr) { }
 
     void InputSocket::set_accepts(const ConnectionDataType& type)
     {
         accepted_types_.add(type);
+        trigger_changed();
     }
 
     bool InputSocket::accepts(const ConnectionDataType& type) const
@@ -24,6 +26,7 @@ namespace noises
     void InputSocket::set_connection(const Connection& connection)
     {
         connection_ = &connection;
+        trigger_changed();
     }
 
     void InputSocket::remove_connection()
@@ -44,5 +47,6 @@ namespace noises
     void InputSocket::set_optional(bool optional)
     {
         optional_ = optional;
+        trigger_changed();
     }
 }

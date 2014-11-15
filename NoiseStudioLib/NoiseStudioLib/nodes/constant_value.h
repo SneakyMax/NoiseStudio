@@ -41,7 +41,7 @@ namespace nodes
             set_value<T, 1>(&value);
         }
 
-        void execute_uniforms(const CompositeDataBuffer& input, DataBuffer& output);
+        void execute_uniforms(const CompositeDataBuffer& input, DataBuffer& output) const;
 
     private:
         template<typename T, unsigned int Dimensions>

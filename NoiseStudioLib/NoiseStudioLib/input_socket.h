@@ -29,8 +29,8 @@ namespace noises
 
     private:
         AcceptedTypes accepted_types_;
-        const Connection* connection_;
         bool optional_;
+        const Connection* connection_;
     };
 }
 

@@ -74,4 +74,17 @@ namespace noises
     {
         return properties_.size();
     }
+
+    void PropertyCollection::listen_changed(std::function<void (Property &)> handler)
+    {
+        listeners_.push_back(handler);
+    }
+
+    void PropertyCollection::trigger_changed(Property& property) const
+    {
+        for(std::function<void(Property&)> handler : listeners_)
+        {
+            handler(property);
+        }
+    }
 }

@@ -3,8 +3,9 @@
 
 #include "graph_outputs.h"
 #include "validation_results.h"
+#include "data_buffer.h"
 
-#include <stack>
+#include <deque>
 
 namespace noises
 {
@@ -19,12 +20,22 @@ namespace noises
         const Graph& graph();
 
         ValidationResults validate_graph() const;
-        GraphOutputs&& execute() const;
+        GraphOutputs execute();
 
     private:
         const Graph& graph_;
 
-        std::stack<std::vector<int>> get_topological_order() const;
+        void get_topological_order();
+        GraphOutputs execute_internal();
+        void execute_node(int node_id);
+        std::vector<int> get_node_dependencies(const GraphNode& node);
+        DataBuffer& get_buffer(int node_id, std::size_t buffer_attribute_length);
+        std::size_t get_attribute_length(const GraphNode& node);
+        std::unordered_map<int, std::reference_wrapper<DataBuffer>> get_node_dependency_buffers(const GraphNode& node);
+        std::unique_ptr<DataBuffer> extract_buffer(const DataBuffer& buffer);
+
+        std::deque<std::vector<int>> topological_order_;
+        std::deque<std::vector<std::pair<int, std::unique_ptr<DataBuffer>>>> buffer_stack_;
     };
 }
 

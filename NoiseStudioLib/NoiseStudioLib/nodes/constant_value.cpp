@@ -7,7 +7,7 @@ namespace nodes
     {
     }
 
-    void ConstantValue::execute_uniforms(const CompositeDataBuffer&, DataBuffer &output)
+    void ConstantValue::execute_uniforms(const CompositeDataBuffer&, DataBuffer &output) const
     {
         output.set_uniform_raw(*value_socket_, value_socket_->data_type(), &buffer_[0]);
     }

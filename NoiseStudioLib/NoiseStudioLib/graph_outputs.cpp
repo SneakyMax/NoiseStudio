@@ -4,7 +4,7 @@ namespace noises
 {
     GraphOutputs::GraphOutputs() { }
 
-    DataBuffer& GraphOutputs::get(const std::string &name)
+    DataBuffer& GraphOutputs::get_raw_buffer(const std::string &name) const
     {
         auto it = buffer_map_.find(name);
         if(it == buffer_map_.end())
@@ -28,5 +28,10 @@ namespace noises
             out.push_back(*it);
         }
         return out;
+    }
+
+    DataBuffer::size_type GraphOutputs::attribute_length(const std::string& name) const
+    {
+        return get_raw_buffer(name).attribute_size();
     }
 }

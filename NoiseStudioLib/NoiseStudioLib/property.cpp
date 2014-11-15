@@ -55,4 +55,17 @@ namespace noises
     {
         return type_size() * num_buffers();
     }
+
+    void Property::listen_changed(std::function<void ()> handler)
+    {
+        listeners_.push_back(handler);
+    }
+
+    void Property::trigger_changed() const
+    {
+        for(std::function<void()> handler : listeners_)
+        {
+            handler();
+        }
+    }
 }

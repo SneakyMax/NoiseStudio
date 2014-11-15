@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <array>
+#include <functional>
 
 #include "connection_data_type.h"
 #include "ptr_array.h"
@@ -36,6 +37,7 @@ namespace noises
             check<T, Dimensions>();
             set_buffer(buffers::value, value.raw());
             has_value_ = true;
+            trigger_changed();
         }
 
         template<typename T, unsigned int Dimensions>
@@ -51,6 +53,7 @@ namespace noises
             check<T, Dimensions>();
             set_buffer(buffers::default_value, value.raw());
             has_default_value_ = true;
+            trigger_changed();
         }
 
         template<typename T, unsigned int Dimensions>
@@ -66,6 +69,7 @@ namespace noises
             check<T, Dimensions>();
             set_buffer(buffers::min_value, value.raw());
             has_min_value_ = true;
+            trigger_changed();
         }
 
         template<typename T, unsigned int Dimensions>
@@ -81,6 +85,7 @@ namespace noises
             check<T, Dimensions>();
             set_buffer(buffers::max_value, value.raw());
             has_max_value_ = true;
+            trigger_changed();
         }
 
         bool has_value() const;
@@ -95,7 +100,11 @@ namespace noises
 
         std::size_t num_buffers() const { return 4; }
 
+        void listen_changed(std::function<void()> handler);
+
     private:
+        void trigger_changed() const;
+
         template<typename T, unsigned int Dimensions>
         void check() const
         {
@@ -119,6 +128,8 @@ namespace noises
         bool has_default_value_;
         bool has_min_value_;
         bool has_max_value_;
+
+        std::vector<std::function<void()>> listeners_;
     };
 }
 

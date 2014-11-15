@@ -95,10 +95,12 @@ namespace noises
         const unsigned char* get_uniform_block(int index) const;
 
         const unsigned char* get_attribute_raw(const OutputSocket& socket, const ConnectionDataType& should_equal, size_type index) const;
+        const unsigned char* get_attribute_raw(unsigned int socket_index, size_type index) const;
         void set_attribute_raw(const OutputSocket& socket, const ConnectionDataType& should_equal, size_type index, const unsigned char* value);
         void set_attribute_all_raw(const OutputSocket& socket, const ConnectionDataType& should_equal, const unsigned char* value, std::size_t length_check);
 
         const unsigned char* get_uniform_raw(const OutputSocket& socket, const ConnectionDataType& should_equal) const;
+        const unsigned char* get_uniform_raw(unsigned int index) const;
         void set_uniform_raw(const OutputSocket& socket, const ConnectionDataType& should_equal, const unsigned char* value);
 
     private:

@@ -25,6 +25,8 @@ namespace noises
             std::unique_ptr<Property> property(new Property(name, ConnectionDataType::value<T, Dimensions>()));
             Property& ref = *property;
             properties_.push_back(std::move(property));
+            ref.listen_changed([this, &ref]() { trigger_changed(ref); });
+            trigger_changed(ref);
             return ref;
         }
 
@@ -49,10 +51,13 @@ namespace noises
         /** Returns the number of properties in the collection. **/
         std::size_t count() const;
 
-    private:
+        void listen_changed(std::function<void(Property&)> handler);
 
+    private:
+        void trigger_changed(Property& property) const;
 
         std::vector<std::unique_ptr<Property>> properties_;
+        std::vector<std::function<void(Property&)>> listeners_;
     };
 }
 

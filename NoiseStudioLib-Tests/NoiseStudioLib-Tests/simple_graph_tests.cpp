@@ -23,4 +23,9 @@ TEST_CASE("Simple graph, can get output", "")
     GraphExecutor e(graph);
 
     GraphOutputs out(e.execute());
+
+    auto output_value = out.get_uniform<int, 1>("int");
+    int value_returned = output_value.value();
+
+    REQUIRE(value_returned == value);
 }

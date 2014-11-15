@@ -20,6 +20,9 @@ namespace noises
     {
     public:
         GraphNode();
+        GraphNode(const GraphNode&) = delete;
+        GraphNode& operator=(const GraphNode&) = delete;
+
         virtual ~GraphNode();
 
         /** Gets the node name which is the same for all nodes of the same type. E.g. "PerlinNoise" **/
@@ -52,11 +55,15 @@ namespace noises
         int id() const;
         void set_id(int id);
 
+        boost::optional<AttributeInfo> get_attribute_override() const;
+
         const std::vector<std::reference_wrapper<Property>> properties();
         const std::vector<std::reference_wrapper<const Property>> properties() const;
 
         boost::optional<std::reference_wrapper<Property>> get_property_by_name(const std::string& name);
         boost::optional<std::reference_wrapper<const Property>> get_property_by_name(const std::string &name) const;
+
+        void request_recalculate_sockets();
 
     protected:
         template<typename T, unsigned int Dimensions>

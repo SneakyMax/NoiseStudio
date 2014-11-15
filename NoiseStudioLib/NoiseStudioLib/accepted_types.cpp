@@ -20,9 +20,10 @@ namespace noises
     {
         for(auto supported_type : supported_types_)
         {
-            if(ConnectionDataType::equals(supported_type, data_type))
+            if(supported_type == data_type || supported_type == ConnectionDataType::any())
                 return true;
         }
+
         return false;
     }
 

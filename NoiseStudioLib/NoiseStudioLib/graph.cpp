@@ -12,7 +12,11 @@ namespace noises
         node->set_id(id_counter_);
         id_counter_++;
 
+        GraphNode& node_ref = *node;
+
         nodes_.push_back(std::move(node));
+
+        node_ref.request_recalculate_sockets();
         return id_counter_ - 1;
     }
 

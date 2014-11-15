@@ -18,6 +18,8 @@ namespace noises
         if(results)
             verify_all_outputs_satisfied(results);
 
+        //TODO verify that all attributes connected to a node are the same length
+
         return results;
     }
 

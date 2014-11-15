@@ -38,8 +38,13 @@ namespace noises
     const unsigned char* DataBuffer::get_attribute_raw(const OutputSocket& socket, const ConnectionDataType& should_equal, size_type index) const
     {
         assert(socket.data_type() == should_equal);
-        size_type real_index = should_equal.size_full() * index;
-        return &(attribute_memory_blocks_[socket.index()][real_index]);
+        return get_attribute_raw(socket.index(), index);
+    }
+
+    const unsigned char* DataBuffer::get_attribute_raw(unsigned int socket_index, size_type index) const
+    {
+        size_type real_index = get_attribute_type(socket_index).size_full() * index;
+        return &(attribute_memory_blocks_[socket_index][real_index]);
     }
 
     void DataBuffer::set_attribute_raw(const OutputSocket &socket, const ConnectionDataType& should_equal, size_type index, const unsigned char *value)
@@ -62,7 +67,12 @@ namespace noises
     const unsigned char* DataBuffer::get_uniform_raw(const OutputSocket &socket, const ConnectionDataType &should_equal) const
     {
         assert(socket.data_type() == should_equal);
-        size_type real_index(get_uniform_index(socket.index()));
+        return get_uniform_raw(socket.index());
+    }
+
+    const unsigned char* DataBuffer::get_uniform_raw(unsigned int index) const
+    {
+        size_type real_index(get_uniform_index(index));
         return &(uniform_memory_block_[real_index]);
     }
 
