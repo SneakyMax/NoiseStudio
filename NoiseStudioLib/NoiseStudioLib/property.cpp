@@ -26,7 +26,7 @@ namespace noises
         return type_size_;
     }
 
-    void Property::set_buffer(int index, unsigned char *ptr)
+    void Property::set_buffer(int index, const unsigned char *ptr)
     {
         std::copy(ptr, ptr + type_size(), get_buffer(index));
     }

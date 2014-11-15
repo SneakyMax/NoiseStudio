@@ -19,6 +19,7 @@ namespace noises
         const std::vector<std::reference_wrapper<const Connection>>& connections() const;
         void add_connection(const Connection& connection);
         void remove_connection(const Connection& connection);
+        void remove_all_connections();
 
     private:
         std::reference_wrapper<const ConnectionDataType> data_type_;

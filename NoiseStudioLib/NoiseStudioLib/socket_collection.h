@@ -7,15 +7,19 @@
 
 #include "socket_type.h"
 #include "connection_data_type.h"
+#include "utils.h"
 
 namespace noises
 {
+    class GraphNode;
+
     template<typename TSocket>
     class SocketCollection
     {
     public:
-        SocketCollection() {}
+        SocketCollection(GraphNode* parent) : parent_(parent) { }
         SocketCollection(const SocketCollection&) = delete;
+        SocketCollection& operator=(const SocketCollection&) = delete;
 
         TSocket& add(const std::string& name, SocketType type)
         {
@@ -36,6 +40,7 @@ namespace noises
         void add(std::unique_ptr<TSocket> socket)
         {
             TSocket& socket_ref = *socket;
+            socket_ref.set_parent(parent_);
 
             if(socket_ref.type() == SocketType::Uniform)
             {
@@ -51,7 +56,7 @@ namespace noises
 
         void remove(const TSocket* socket)
         {
-            list_t& sockets = socket->type() == SocketType::Uniform ? uniform_sockets_ : attribute_sockets_;
+            auto& sockets = socket->type() == SocketType::Uniform ? uniform_sockets_ : attribute_sockets_;
 
             sockets.erase(sockets.begin() + socket.index());
 
@@ -64,16 +69,24 @@ namespace noises
 
         boost::optional<std::reference_wrapper<TSocket>> get_by_name(const std::string& name)
         {
+            auto const_value = static_cast<const SocketCollection<TSocket>*>(this)->get_by_name(name);
+            if(!const_value)
+                return boost::none;
+            return std::ref(const_cast<TSocket&>(const_value->get()));
+        }
+
+        boost::optional<std::reference_wrapper<const TSocket>> get_by_name(const std::string &name) const
+        {
             for(auto& ptr : attribute_sockets_)
             {
                 if(ptr->name() == name)
-                    return std::ref(*ptr);
+                    return std::ref(static_cast<const TSocket&>(*ptr));
             }
 
             for(auto& ptr : uniform_sockets_)
             {
                 if(ptr->name() == name)
-                    return std::ref(*ptr);
+                    return std::ref(static_cast<const TSocket&>(*ptr));
             }
 
             return boost::none;
@@ -81,28 +94,55 @@ namespace noises
 
         TSocket& operator[](const std::string& name)
         {
+            return const_cast<TSocket&>(static_cast<const SocketCollection<TSocket>*>(this)->operator[](name));
+        }
+
+        const TSocket& operator[](const std::string& name) const
+        {
             auto socket = get_by_name(name);
             if(!socket)
                 throw std::invalid_argument(name + " is not a valid socket.");
-            return socket.get().get();
+            return *socket;
         }
 
-        TSocket& operator[](const char* name)
+        std::vector<std::reference_wrapper<TSocket>> attribute_sockets()
         {
-            return (*this)[static_cast<std::string>(name)];
+            return utils::to_reference_array(attribute_sockets_);
         }
 
-        typedef std::vector<std::unique_ptr<TSocket>> list_t;
+        std::vector<std::reference_wrapper<TSocket>> uniform_sockets()
+        {
+            return utils::to_reference_array(uniform_sockets_);
+        }
 
-        list_t& attribute_sockets() { return attribute_sockets_; }
-        list_t& uniform_sockets() { return uniform_sockets_; }
+        const std::vector<std::reference_wrapper<const TSocket>> attribute_sockets() const
+        {
+            return utils::to_reference_array_const(attribute_sockets_);
+        }
 
-        const list_t& attribute_sockets() const { return attribute_sockets_; }
-        const list_t& uniform_sockets() const { return uniform_sockets_; }
+        const std::vector<std::reference_wrapper<const TSocket>> uniform_sockets() const
+        {
+            return utils::to_reference_array_const(uniform_sockets_);
+        }
+
+        std::vector<std::reference_wrapper<TSocket>> all_sockets()
+        {
+            return utils::concat(attribute_sockets(), uniform_sockets());
+        }
+
+        const std::vector<std::reference_wrapper<const TSocket>> all_sockets() const
+        {
+            return utils::concat(attribute_sockets(), uniform_sockets());
+        }
+
+        GraphNode* parent() { return parent_; }
+        const GraphNode* parent() const { return parent_; }
 
     private:
-        list_t attribute_sockets_;
-        list_t uniform_sockets_;
+        std::vector<std::unique_ptr<TSocket>> attribute_sockets_;
+        std::vector<std::unique_ptr<TSocket>> uniform_sockets_;
+
+        GraphNode* parent_;
     };
 }
 

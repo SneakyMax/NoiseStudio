@@ -11,3 +11,5 @@
 /NoiseStudioLib/build
 /NoiseStudioLib-Tests/build
 *.user
+/cloc.exe
+*.autosave

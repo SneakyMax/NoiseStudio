@@ -6,7 +6,6 @@ CONFIG += staticlib
 SOURCES += \
     graph.cpp \
     graph_node.cpp \
-    connection_data_type.cpp \
     connection.cpp \
     input_socket.cpp \
     output_socket.cpp \
@@ -18,7 +17,14 @@ SOURCES += \
     property.cpp \
     property_collection.cpp \
     graph_executor.cpp \
-    nodes/constant_value.cpp
+    nodes/constant_value.cpp \
+    nodes/uniform_buffer.cpp \
+    nodes/attribute_buffer.cpp \
+    graph_outputs.cpp \
+    connection_data_type.cpp \
+    graph_validator.cpp \
+    validation_results.cpp \
+    nodes/math.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
@@ -44,7 +50,13 @@ HEADERS += \
     attrbute_info.h \
     graph_executor.h \
     nodes/constant_value.h \
-    ptr_array_common.hpart
+    ptr_array_common.hpart \
+    nodes/uniform_buffer.h \
+    nodes/attribute_buffer.h \
+    graph_outputs.h \
+    graph_validator.h \
+    validation_results.h \
+    nodes/math.h
 
 header_files.path = $$OUT_PWD/lib
 header_files.files = $$HEADERS

@@ -1,11 +1,12 @@
 #include "catch.h"
 
 #include <graph.h>
-#include <constant_value.h>
+#include <nodes/constant_value.h>
+#include <graph_executor.h>
 
 using namespace noises;
 
-TEST_CASE("Simple graph", "")
+TEST_CASE("Simple graph, can get output", "")
 {
     Graph graph;
 
@@ -13,7 +14,13 @@ TEST_CASE("Simple graph", "")
     int value = 7;
     cv->set_value<int, 1>(&value);
 
-    graph.add(std::move(cv));
+    int cv_id = graph.add_node(std::move(cv));
+    graph.add_uniform_output("int");
 
-    auto& output = graph.add_output("int", ConnectionDataType::value<int, 1>(), SocketType::Uniform);
+    graph.connect(graph.get_node_by_id(cv_id)->get().outputs()[nodes::ConstantValue::socket_name],
+                  graph.get_uniform_output("int")->get().input());
+
+    GraphExecutor e(graph);
+
+    GraphOutputs out(e.execute());
 }

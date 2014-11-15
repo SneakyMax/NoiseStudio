@@ -1,11 +1,13 @@
 #include "graph.h"
 #include "utils.h"
+#include "nodes/uniform_buffer.h"
+#include "nodes/attribute_buffer.h"
 
 namespace noises
 {
     Graph::Graph() : id_counter_(0) { }
 
-    int Graph::add(std::unique_ptr<GraphNode> node)
+    int Graph::add_node(std::unique_ptr<GraphNode> node)
     {
         node->set_id(id_counter_);
         id_counter_++;
@@ -14,20 +16,14 @@ namespace noises
         return id_counter_ - 1;
     }
 
-    void Graph::remove(GraphNode* node)
+    void Graph::remove_node(GraphNode* node)
     {
         // Disconnect all connections to this node
-        for(auto& socket : node->inputs().attribute_sockets())
-            disconnect(*socket);
+        for(auto& socket : node->inputs().all_sockets())
+            disconnect(socket);
 
-        for(auto& socket : node->inputs().uniform_sockets())
-            disconnect(*socket);
-
-        for(auto& socket : node->outputs().attribute_sockets())
-            disconnect_all(*socket);
-
-        for(auto& socket : node->outputs().uniform_sockets())
-            disconnect_all(*socket);
+        for(auto& socket : node->outputs().all_sockets())
+            disconnect_all(socket);
 
         utils::remove_by_pointer(nodes_, node);
     }
@@ -60,6 +56,19 @@ namespace noises
             if(node->id() == id)
                 return std::ref(*node);
         }
+
+        for(auto& node : input_nodes_)
+        {
+            if(node->id() == id)
+                return std::ref(*node);
+        }
+
+        for(auto& node : output_nodes_)
+        {
+            if(node->id() == id)
+                return std::ref(*node);
+        }
+
         return boost::none;
     }
 
@@ -68,21 +77,25 @@ namespace noises
         if(input.connection() != nullptr)
             disconnect(input);
 
-        std::unique_ptr<Connection> connection(new Connection(input, output));
-        output.add_connection(*connection.get());
-        input.set_connection(connection.get());
+        std::unique_ptr<Connection> connection(new Connection(input, output, *this));
+        output.add_connection(*connection);
+        input.set_connection(*connection);
+
+        connection->set_id(id_counter_);
+        id_counter_++;
 
         connections_.push_back(std::move(connection));
     }
 
     void Graph::disconnect(InputSocket& input)
     {
-        if(input.connection() == nullptr)
+        auto possible_connection = input.connection();
+        if(!possible_connection)
             return;
 
         //Could iterate connection_ to find same non-const object but a const cast is simpler
-        Connection* connection = const_cast<Connection*>(input.connection());
-        connection->disconnect();
+        Connection& connection = const_cast<Connection&>(possible_connection->get());
+        connection.disconnect();
         remove_connection(connection);
     }
 
@@ -91,22 +104,16 @@ namespace noises
         for(auto& connection_wrapper : output.connections())
         {
             //Could iterate connection_ to find same non-const object but a const cast is simpler
-            Connection* connection = const_cast<Connection*>(&connection_wrapper.get());
-            connection->disconnect();
+
+            Connection& connection = const_cast<Connection&>(connection_wrapper.get());
+            connection.disconnect();
             remove_connection(connection);
         }
     }
 
-    void Graph::remove_connection(const Connection* connection)
+    void Graph::remove_connection(const Connection& connection)
     {
-        auto it = connections_.begin();
-        for(; it != connections_.end(); ++it)
-        {
-            if(it->get() == connection)
-                break;
-        }
-        if(it != connections_.end())
-            connections_.erase(it);
+        utils::remove_by_pointer(connections_, &connection);
     }
 
     void Graph::remove_property(const std::string &name)
@@ -119,23 +126,126 @@ namespace noises
         return properties_.get_property_by_name(name);
     }
 
-    SocketCollection<InputSocket>& Graph::inputs()
+    // Icky repetitive
+    GraphNode& Graph::add_attribute_output(const std::string &name)
     {
-        return inputs_;
+        if(get_attribute_output(name) || get_uniform_output(name))
+            throw std::invalid_argument(name + " is already taken as an output.");
+
+        std::unique_ptr<GraphNode> buffer_node(new nodes::AttributeBuffer);
+        buffer_node->set_name(name);
+        buffer_node->set_id(id_counter_);
+        id_counter_++;
+
+        GraphNode& buffer_node_ref = *buffer_node;
+        output_nodes_.push_back(std::move(buffer_node));
+        return buffer_node_ref;
     }
 
-    SocketCollection<OutputSocket>& Graph::outputs()
+    GraphNode& Graph::add_uniform_output(const std::string &name)
     {
-        return outputs_;
+        if(get_uniform_output(name) || get_attribute_output(name))
+            throw std::invalid_argument(name + " is already taken as an output.");
+
+        std::unique_ptr<GraphNode> buffer_node(new nodes::UniformBuffer);
+        buffer_node->set_name(name);
+        buffer_node->set_id(id_counter_);
+        id_counter_++;
+
+        GraphNode& buffer_node_ref = *buffer_node;
+        output_nodes_.push_back(std::move(buffer_node));
+        return buffer_node_ref;
     }
 
-    InputSocket& Graph::add_input(const std::string &name, SocketType type)
+    GraphNode& Graph::add_uniform_input(const std::string &name)
     {
-        return inputs_.add(name, type);
+        if(get_uniform_input(name) || get_attribute_input(name))
+            throw std::invalid_argument(name + " is already taken as an input.");
+
+        std::unique_ptr<GraphNode> buffer_node(new nodes::UniformBuffer);
+        buffer_node->set_name(name);
+        buffer_node->set_id(id_counter_);
+        id_counter_++;
+
+        GraphNode& buffer_node_ref = *buffer_node;
+        input_nodes_.push_back(std::move(buffer_node));
+        return buffer_node_ref;
     }
 
-    OutputSocket& Graph::add_output(const std::string &name, const ConnectionDataType &data_type, SocketType type)
+    GraphNode& Graph::add_attribute_input(const std::string &name)
     {
-        return outputs_.add(name, data_type, type);
+        if(get_uniform_input(name) || get_attribute_input(name))
+            throw std::invalid_argument(name + " is already taken as an input.");
+
+        std::unique_ptr<GraphNode> buffer_node(new nodes::AttributeBuffer);
+        buffer_node->set_name(name);
+        buffer_node->set_id(id_counter_);
+        id_counter_++;
+
+        GraphNode& buffer_node_ref = *buffer_node;
+        input_nodes_.push_back(std::move(buffer_node));
+        return buffer_node_ref;
+    }
+
+    boost::optional<std::reference_wrapper<nodes::AttributeBuffer>> Graph::get_attribute_input(const std::string &name)
+    {
+        return get_buffer<nodes::AttributeBuffer>(name, input_nodes_);
+    }
+
+    boost::optional<std::reference_wrapper<nodes::AttributeBuffer>> Graph::get_attribute_output(const std::string &name)
+    {
+        return get_buffer<nodes::AttributeBuffer>(name, output_nodes_);
+    }
+
+    boost::optional<std::reference_wrapper<nodes::UniformBuffer>> Graph::get_uniform_input(const std::string &name)
+    {
+        return get_buffer<nodes::UniformBuffer>(name, input_nodes_);
+    }
+
+    boost::optional<std::reference_wrapper<nodes::UniformBuffer>> Graph::get_uniform_output(const std::string &name)
+    {
+        return get_buffer<nodes::UniformBuffer>(name, output_nodes_);
+    }
+
+    //Below be boring getters
+
+    std::vector<std::reference_wrapper<Connection>> Graph::connections()
+    {
+        return utils::to_reference_array(connections_);
+    }
+
+    const std::vector<std::reference_wrapper<const Connection>> Graph::connections() const
+    {
+        return utils::to_reference_array_const(connections_);
+    }
+
+    std::vector<std::reference_wrapper<GraphNode>> Graph::nodes()
+    {
+        return utils::to_reference_array(nodes_);
+    }
+
+    const std::vector<std::reference_wrapper<const GraphNode>> Graph::nodes() const
+    {
+        return utils::to_reference_array_const(nodes_);
+    }
+
+    std::vector<std::reference_wrapper<GraphNode>> Graph::output_nodes()
+    {
+        return utils::to_reference_array(output_nodes_);
+    }
+
+    const std::vector<std::reference_wrapper<const GraphNode>> Graph::output_nodes() const
+    {
+        return utils::to_reference_array_const(output_nodes_);
+    }
+
+    std::vector<std::reference_wrapper<GraphNode>> Graph::input_nodes()
+    {
+        return utils::to_reference_array(input_nodes_);
+    }
+
+    const std::vector<std::reference_wrapper<const GraphNode>> Graph::input_nodes() const
+    {
+        return utils::to_reference_array_const(input_nodes_);
     }
 }

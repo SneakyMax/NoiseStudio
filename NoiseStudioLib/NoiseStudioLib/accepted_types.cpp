@@ -6,7 +6,7 @@ namespace noises
 {
     void AcceptedTypes::add(const ConnectionDataType& data_type)
     {
-        if(supports(data_type))
+        if(accepts(data_type))
             return;
         supported_types_.push_back(std::reference_wrapper<const ConnectionDataType>(data_type));
     }
@@ -16,7 +16,7 @@ namespace noises
         utils::remove_by_pointer(supported_types_, &data_type);
     }
 
-    bool AcceptedTypes::supports(const ConnectionDataType& data_type) const
+    bool AcceptedTypes::accepts(const ConnectionDataType& data_type) const
     {
         for(auto supported_type : supported_types_)
         {
@@ -24,5 +24,10 @@ namespace noises
                 return true;
         }
         return false;
+    }
+
+    std::vector<std::reference_wrapper<const ConnectionDataType>> AcceptedTypes::accepted_types() const
+    {
+        return supported_types_;
     }
 }

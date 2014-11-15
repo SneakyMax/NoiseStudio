@@ -93,7 +93,7 @@ TEST_CASE("Testing DataBuffer", "")
         int n = 4;
         DataBuffer d(n);
 
-        SocketCollection<OutputSocket> sockets;
+        SocketCollection<OutputSocket> sockets(nullptr);
 
         sockets.add(std::unique_ptr<OutputSocket>(new OutputSocket("position", ConnectionDataType::value<float, 3>(), SocketType::Attribute)));
 
@@ -152,7 +152,7 @@ TEST_CASE("Testing DataBuffer", "")
     SECTION("Can get and set multiple uniforms")
     {
         DataBuffer d(1);
-        SocketCollection<OutputSocket> sockets;
+        SocketCollection<OutputSocket> sockets(nullptr);
 
         sockets.add(std::unique_ptr<OutputSocket>(
             new OutputSocket("a", ConnectionDataType::value<int, 2>(), SocketType::Uniform)));

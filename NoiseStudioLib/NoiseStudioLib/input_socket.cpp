@@ -2,7 +2,7 @@
 
 namespace noises
 {
-    InputSocket::InputSocket(const std::string& name, SocketType type) : Socket(name, type) { }
+    InputSocket::InputSocket(const std::string& name, SocketType type) : Socket(name, type), optional_(false), connection_(nullptr) { }
 
     void InputSocket::set_accepts(const ConnectionDataType& type)
     {
@@ -11,16 +11,38 @@ namespace noises
 
     bool InputSocket::accepts(const ConnectionDataType& type) const
     {
-        return accepted_types_.supports(type);
+        return accepted_types_.accepts(type);
     }
 
-    const Connection* InputSocket::connection() const
+    const boost::optional<std::reference_wrapper<const Connection>> InputSocket::connection() const
     {
-        return connection_;
+        if(connection_ == nullptr)
+            return boost::none;
+        return std::ref(*connection_);
     }
 
-    void InputSocket::set_connection(const Connection* connection)
+    void InputSocket::set_connection(const Connection& connection)
     {
-        connection_ = connection;
+        connection_ = &connection;
+    }
+
+    void InputSocket::remove_connection()
+    {
+        connection_ = nullptr;
+    }
+
+    std::vector<std::reference_wrapper<const ConnectionDataType>> InputSocket::accepted_types() const
+    {
+        return accepted_types_.accepted_types();
+    }
+
+    bool InputSocket::optional() const
+    {
+        return optional_;
+    }
+
+    void InputSocket::set_optional(bool optional)
+    {
+        optional_ = optional;
     }
 }

@@ -96,6 +96,7 @@ namespace noises
 
         const unsigned char* get_attribute_raw(const OutputSocket& socket, const ConnectionDataType& should_equal, size_type index) const;
         void set_attribute_raw(const OutputSocket& socket, const ConnectionDataType& should_equal, size_type index, const unsigned char* value);
+        void set_attribute_all_raw(const OutputSocket& socket, const ConnectionDataType& should_equal, const unsigned char* value, std::size_t length_check);
 
         const unsigned char* get_uniform_raw(const OutputSocket& socket, const ConnectionDataType& should_equal) const;
         void set_uniform_raw(const OutputSocket& socket, const ConnectionDataType& should_equal, const unsigned char* value);

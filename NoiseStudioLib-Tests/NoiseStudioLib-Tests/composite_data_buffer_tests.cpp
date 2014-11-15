@@ -42,7 +42,7 @@ TEST_CASE("Composite data buffer add/get uniforms")
         InputSocket input("int", SocketType::Uniform);
         input.set_accepts(ConnectionDataType::value<int, 3>());
 
-        const int* data_ret = c.get_uniform<int, 3>(input);
+        auto data_ret = c.get_uniform<int, 3>(input);
 
         REQUIRE(data_ret[0] == 1);
         REQUIRE(data_ret[1] == 2);
@@ -84,7 +84,7 @@ TEST_CASE("Composite data buffer add/get attribute", "")
 
         for(int i = 0; i < n; i++)
         {
-            const int* data_ret = c.get_attribute<int, 3>(input, i);
+            auto data_ret = c.get_attribute<int, 3>(input, i);
 
             REQUIRE(data_ret[0] == i);
             REQUIRE(data_ret[1] == i * 10);
@@ -95,8 +95,8 @@ TEST_CASE("Composite data buffer add/get attribute", "")
 
 TEST_CASE("Multiple attributes flip-flop")
 {
-    SocketCollection<OutputSocket> outputs;
-    SocketCollection<InputSocket> inputs;
+    SocketCollection<OutputSocket> outputs(nullptr);
+    SocketCollection<InputSocket> inputs(nullptr);
 
     outputs.add(std::unique_ptr<OutputSocket>(
         new OutputSocket("a", ConnectionDataType::value<int, 2>(), SocketType::Attribute)));
@@ -134,8 +134,8 @@ TEST_CASE("Multiple attributes flip-flop")
 
     for(int i = 0; i < n; i++)
     {
-        const float* float_data_ret = c.get_attribute<float, 2>(inputs["b"], i);
-        const int* int_data_ret = c.get_attribute<int, 2>(inputs["a"], i);
+        auto float_data_ret = c.get_attribute<float, 2>(inputs["b"], i);
+        auto int_data_ret = c.get_attribute<int, 2>(inputs["a"], i);
 
         REQUIRE(float_data_ret[0] == i + 0.5f);
         REQUIRE(float_data_ret[1] == (i * 10) + 0.5f);

@@ -3,7 +3,7 @@
 namespace noises
 {
     Socket::Socket(const std::string& name, SocketType type)
-        : name_(name), optional_(false), index_(0), type_(type)
+        : name_(name), index_(0), type_(type), parent_(nullptr)
     {
 
     }
@@ -16,16 +16,6 @@ namespace noises
     void Socket::set_name(const std::string& name)
     {
         name_ = name;
-    }
-
-    bool Socket::optional() const
-    {
-        return optional_;
-    }
-
-    void Socket::set_optional(bool optional)
-    {
-        optional_ = optional;
     }
 
     unsigned int Socket::index() const
@@ -41,5 +31,20 @@ namespace noises
     SocketType Socket::type() const
     {
         return type_;
+    }
+
+    GraphNode* Socket::parent()
+    {
+        return parent_;
+    }
+
+    const GraphNode* Socket::parent() const
+    {
+        return parent_;
+    }
+
+    void Socket::set_parent(GraphNode *parent)
+    {
+        parent_ = parent;
     }
 }

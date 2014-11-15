@@ -97,7 +97,7 @@ namespace noises
 
     private:
         template<typename T, unsigned int Dimensions>
-        void check()
+        void check() const
         {
             auto& data_type = ConnectionDataType::value<T, Dimensions>();
             assert(data_type == data_type_);
@@ -106,8 +106,8 @@ namespace noises
         inline unsigned char* get_buffer(buffers buffer) const { return get_buffer((int)buffer); }
         unsigned char* get_buffer(int index) const;
 
-        inline void set_buffer(buffers buffer, unsigned char* ptr) { set_buffer((int)buffer, ptr); }
-        void set_buffer(int index, unsigned char* ptr);
+        inline void set_buffer(buffers buffer, const unsigned char* ptr) { set_buffer((int)buffer, ptr); }
+        void set_buffer(int index, const unsigned char* ptr);
 
         std::vector<unsigned char> buffers_;
 

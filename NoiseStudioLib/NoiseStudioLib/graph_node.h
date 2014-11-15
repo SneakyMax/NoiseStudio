@@ -29,11 +29,19 @@ namespace noises
         const std::string& name() const;
         void set_name(const std::string& name);
 
+        std::string display_name() const;
+
         SocketCollection<InputSocket>& inputs();
         SocketCollection<OutputSocket>& outputs();
 
         virtual const SocketCollection<InputSocket>& inputs() const;
         virtual const SocketCollection<OutputSocket>& outputs() const;
+
+        InputSocket& input(const std::string& name);
+        const InputSocket& input(const std::string& name) const;
+
+        OutputSocket& output(const std::string& name);
+        const OutputSocket& output(const std::string &name) const;
 
         /** Executes a graph node and computes its uniform outputs. This method is executed once. **/
         virtual void execute_uniforms(const CompositeDataBuffer& input, DataBuffer& output) const;
@@ -70,15 +78,17 @@ namespace noises
     private:
         void recalculate_sockets_internal();
 
-        SocketCollection<InputSocket> inputs_;
-        SocketCollection<OutputSocket> outputs_;
-
         PropertyCollection properties_;
 
         std::string name_;
-        int id_;
         AttributeInfo attribute_override_;
+
+        SocketCollection<InputSocket> inputs_;
+        SocketCollection<OutputSocket> outputs_;
+
+        int id_;
         bool in_recalculate_sockets_;
+
     };
 }
 

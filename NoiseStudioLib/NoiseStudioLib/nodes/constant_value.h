@@ -13,6 +13,8 @@ namespace nodes
     class ConstantValue : public GraphNode
     {
     public:
+        static const std::string socket_name;
+
         ConstantValue();
 
         std::string node_name() const { return "Constant Value"; }
@@ -29,7 +31,14 @@ namespace nodes
             value.copy_to(buffer_);
 
             create_value_if_not_exist<T, Dimensions>();
-            outputs().get_by_name("value").get().get().set_data_type(ConnectionDataType::value<T, Dimensions>());
+            outputs()[socket_name].set_data_type(ConnectionDataType::value<T, Dimensions>());
+        }
+
+        /** Convenience method for setting a <T, 1> value **/
+        template<typename T>
+        void set_value_single(T value)
+        {
+            set_value<T, 1>(&value);
         }
 
         void execute_uniforms(const CompositeDataBuffer& input, DataBuffer& output);
@@ -38,10 +47,10 @@ namespace nodes
         template<typename T, unsigned int Dimensions>
         void create_value_if_not_exist()
         {
-            if(outputs().get_by_name("value"))
+            if(outputs().get_by_name(socket_name))
                 return;
 
-            value_socket_ = &outputs().add("value", ConnectionDataType::value<T, Dimensions>(), SocketType::Uniform);
+            value_socket_ = &outputs().add(socket_name, ConnectionDataType::value<T, Dimensions>(), SocketType::Uniform);
         }
 
         std::vector<unsigned char> buffer_;

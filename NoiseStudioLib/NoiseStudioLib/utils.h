@@ -33,6 +33,46 @@ namespace noises
             if(it != list.end())
                 list.erase(it);
         }
+
+        template<typename T>
+        std::vector<std::reference_wrapper<T>> to_reference_array(const std::vector<std::unique_ptr<T>>& ptr_array)
+        {
+            std::vector<std::reference_wrapper<T>> out;
+            out.reserve(ptr_array.size());
+            for(auto& t_ptr : ptr_array)
+            {
+                out.push_back(std::ref(*t_ptr));
+            }
+            return out;
+        }
+
+        template<typename T>
+        const std::vector<std::reference_wrapper<const T>> to_reference_array_const(const std::vector<std::unique_ptr<T>>& ptr_array)
+        {
+            std::vector<std::reference_wrapper<const T>> out;
+            out.reserve(ptr_array.size());
+            for(auto& t_ptr : ptr_array)
+            {
+                out.push_back(std::ref(static_cast<const T&>(*t_ptr)));
+            }
+            return out;
+        }
+
+        template<typename T>
+        std::vector<T> concat(std::vector<T>& a, const std::vector<T>& b)
+        {
+            a.insert(a.end(), b.begin(), b.end());
+            return a;
+        }
+
+        template<typename T>
+        std::vector<T> concat(const std::vector<T>& a, const std::vector<T>& b)
+        {
+            std::vector<T> out;
+            out.insert(out.end(), a.begin(), a.end());
+            out.insert(out.end(), b.begin(), b.end());
+            return out;
+        }
     }
 }
 

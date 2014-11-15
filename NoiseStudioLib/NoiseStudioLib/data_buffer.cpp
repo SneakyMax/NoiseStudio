@@ -9,14 +9,14 @@ namespace noises
 
     void DataBuffer::add(const SocketCollection<OutputSocket> &sockets)
     {
-        for(const std::unique_ptr<OutputSocket>& attribute_socket : sockets.attribute_sockets())
+        for(auto& socket : sockets.attribute_sockets())
         {
-            add_attribute(attribute_socket->data_type());
+            add_attribute(socket.get().data_type());
         }
 
-        for(const std::unique_ptr<OutputSocket>& uniform_socket : sockets.uniform_sockets())
+        for(auto& uniform_socket : sockets.uniform_sockets())
         {
-            add_uniform(uniform_socket->data_type());
+            add_uniform(uniform_socket.get().data_type());
         }
     }
 
@@ -48,6 +48,15 @@ namespace noises
         size_type real_index = should_equal.size_full() * index;
         unsigned char* ptr = &(attribute_memory_blocks_[socket.index()][real_index]);
         std::copy(value, value + should_equal.size_full(), ptr);
+    }
+
+    void DataBuffer::set_attribute_all_raw(const OutputSocket &socket, const ConnectionDataType &should_equal, const unsigned char *value, std::size_t length_check)
+    {
+        assert(socket.data_type() == should_equal);
+        unsigned char* first_ptr = &(attribute_memory_blocks_[socket.index()][0]);
+        std::size_t size = attribute_memory_blocks_[socket.index()].size();
+        assert(size == length_check);
+        std::copy(value, value + size, first_ptr);
     }
 
     const unsigned char* DataBuffer::get_uniform_raw(const OutputSocket &socket, const ConnectionDataType &should_equal) const

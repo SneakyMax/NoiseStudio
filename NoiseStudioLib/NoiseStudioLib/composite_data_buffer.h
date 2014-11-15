@@ -2,6 +2,9 @@
 #define COMPOSITE_DATA_BUFFER_H
 
 #include <vector>
+#include <tuple>
+
+#include "ptr_array.h"
 #include "connection_data_type.h"
 
 namespace noises
@@ -22,18 +25,21 @@ namespace noises
         void add_uniform(const ConnectionDataType& data_type, const unsigned char* ptr);
 
         template<typename T, unsigned int Dimensions>
-        const T* get_attribute(const InputSocket& socket, size_type index) const
+        const ptr_array<T, Dimensions> get_attribute(const InputSocket& socket, size_type index) const
         {
-            const unsigned char* ptr = get_attribute_internal(socket, ConnectionDataType::value<T, Dimensions>(), index);
-            return reinterpret_cast<const T*>(ptr);
+            return get_attribute_raw(socket, ConnectionDataType::value<T, Dimensions>(), index);
         }
 
         template<typename T, unsigned int Dimensions>
-        const T* get_uniform(const InputSocket& socket) const
+        const ptr_array<T, Dimensions> get_uniform(const InputSocket& socket) const
         {
-            const unsigned char* ptr = get_uniform_internal(socket, ConnectionDataType::value<T, Dimensions>());
-            return reinterpret_cast<const T*>(ptr);
+            return get_uniform_raw(socket, ConnectionDataType::value<T, Dimensions>());
         }
+
+        const unsigned char* get_attribute_raw(const InputSocket& socket, const ConnectionDataType& should_support, size_type index) const;
+        std::tuple<const unsigned char*, std::size_t> get_attribute_all_raw(const InputSocket& socket, const ConnectionDataType& should_support) const;
+
+        const unsigned char* get_uniform_raw(const InputSocket& socket, const ConnectionDataType& should_support) const;
 
         size_type attribute_size() const;
 
@@ -49,9 +55,6 @@ namespace noises
         const ConnectionDataType& get_uniform_type(int index) const;
 
     private:
-        const unsigned char* get_attribute_internal(const InputSocket& socket, const ConnectionDataType& should_support, size_type index) const;
-        const unsigned char* get_uniform_internal(const InputSocket& socket, const ConnectionDataType& should_support) const;
-
         size_type get_uniform_index(int index) const;
 
         std::vector<std::reference_wrapper<const ConnectionDataType>> attribute_data_types_;

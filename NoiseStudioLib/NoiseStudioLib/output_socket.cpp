@@ -31,4 +31,9 @@ namespace noises
     {
         utils::remove_by_pointer(connections_, const_cast<Connection*>(&connection));
     }
+
+    void OutputSocket::remove_all_connections()
+    {
+        connections_.clear();
+    }
 }

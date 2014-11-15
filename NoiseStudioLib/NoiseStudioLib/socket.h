@@ -7,6 +7,8 @@
 
 namespace noises
 {
+    class GraphNode;
+
     class Socket
     {
     public:
@@ -14,9 +16,6 @@ namespace noises
 
         std::string name() const;
         void set_name(const std::string& name);
-
-        bool optional() const;
-        void set_optional(bool optional);
 
         unsigned int index() const;
         void set_index(int index);
@@ -26,14 +25,19 @@ namespace noises
         Socket(const Socket&) = delete;
         Socket& operator=(const Socket&) = delete;
 
+        GraphNode* parent();
+        const GraphNode* parent() const;
+
+        void set_parent(GraphNode* parent);
+
     protected:
         Socket(const std::string& name, SocketType type);
 
     private:
         std::string name_;
-        bool optional_;
         unsigned int index_;
         SocketType type_;
+        GraphNode* parent_;
     };
 }
 

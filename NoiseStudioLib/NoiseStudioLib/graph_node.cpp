@@ -2,7 +2,7 @@
 
 namespace noises
 {
-    GraphNode::GraphNode() : name_(""), attribute_override_(AttributeInfo::inherit()) { }
+    GraphNode::GraphNode() : name_(""), attribute_override_(AttributeInfo::inherit()), inputs_(this), outputs_(this) { }
 
     GraphNode::~GraphNode() { }
 
@@ -100,6 +100,33 @@ namespace noises
     void GraphNode::recalculate_sockets()
     {
         // Optionally implemented in derived classes
+    }
+
+    std::string GraphNode::display_name() const
+    {
+        if(name() == "")
+            return node_name() + " (Unnamed)";
+        return name() + " (" + node_name() + ")";
+    }
+
+    InputSocket& GraphNode::input(const std::string &name)
+    {
+        return inputs_[name];
+    }
+
+    const InputSocket& GraphNode::input(const std::string &name) const
+    {
+        return inputs_[name];
+    }
+
+    OutputSocket& GraphNode::output(const std::string &name)
+    {
+        return outputs_[name];
+    }
+
+    const OutputSocket& GraphNode::output(const std::string &name) const
+    {
+        return outputs_[name];
     }
 }
 

@@ -1,7 +1,9 @@
 #include "composite_data_buffer.h"
 
-#include "input_socket.h"
 #include <cassert>
+
+#include "input_socket.h"
+
 
 namespace noises
 {
@@ -24,7 +26,7 @@ namespace noises
         std::copy(ptr, ptr + data_type.size_full(), &uniform_memory_block_[real_index]);
     }
 
-    const unsigned char* CompositeDataBuffer::get_attribute_internal(const InputSocket &socket, const ConnectionDataType &should_support, size_type index) const
+    const unsigned char* CompositeDataBuffer::get_attribute_raw(const InputSocket &socket, const ConnectionDataType &should_support, size_type index) const
     {
         assert(socket.accepts(should_support));
         assert(should_support == attribute_data_types_[socket.index()]);
@@ -35,7 +37,18 @@ namespace noises
         return &(buffer.get()[real_index]);
     }
 
-    const unsigned char* CompositeDataBuffer::get_uniform_internal(const InputSocket &socket, const ConnectionDataType &should_support) const
+    std::tuple<const unsigned char*, std::size_t> CompositeDataBuffer::get_attribute_all_raw(const InputSocket &socket, const ConnectionDataType &should_support) const
+    {
+        assert(socket.accepts(should_support));
+        assert(should_support == attribute_data_types_[socket.index()]);
+
+        const std::reference_wrapper<const std::vector<unsigned char>>& buffer = attribute_refs_[socket.index()];
+        const unsigned char* first = &(buffer.get()[0]);
+        const std::size_t size = buffer.get().size();
+        return std::make_tuple(first, size);
+    }
+
+    const unsigned char* CompositeDataBuffer::get_uniform_raw(const InputSocket &socket, const ConnectionDataType &should_support) const
     {
         assert(socket.accepts(should_support));
         assert(should_support == uniform_data_types_[socket.index()]);

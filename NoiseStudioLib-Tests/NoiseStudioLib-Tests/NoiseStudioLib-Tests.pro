@@ -8,7 +8,9 @@ SOURCES += main.cpp \
     data_buffer_tests.cpp \
     composite_data_buffer_tests.cpp \
     property_collection_tests.cpp \
-    simple_graph_tests.cpp
+    simple_graph_tests.cpp \
+    graph_validator_tests.cpp \
+    math_node_tests.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
@@ -20,11 +22,12 @@ QMAKE_CXXFLAGS += -std=c++11
 
 INCLUDEPATH += ../../NoiseStudioLib/boost
 
+
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../NoiseStudioLib/build/release/ -lNoiseStudioLib
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../NoiseStudioLib/build/debug/ -lNoiseStudioLib
 
-INCLUDEPATH += $$PWD/../../NoiseStudioLib/build/lib
-DEPENDPATH += $$PWD/../../NoiseStudioLib/build/lib
+INCLUDEPATH += $$PWD/../../NoiseStudioLib/NoiseStudioLib
+DEPENDPATH += $$PWD/../../NoiseStudioLib/NoiseStudioLib
 
 win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/../../NoiseStudioLib/build/release/libNoiseStudioLib.a
 else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/../../NoiseStudioLib/build/debug/libNoiseStudioLib.a

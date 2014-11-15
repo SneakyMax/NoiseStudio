@@ -1,6 +1,7 @@
 #ifndef PTR_ARRAY_H
 #define PTR_ARRAY_H
 
+#include <array>
 #include <cstddef>
 #include <stdexcept>
 
@@ -85,7 +86,7 @@ namespace noises
 
         operator const T&() const
         {
-            return value();
+            return *ptr_;
         }
 
         const T& operator*() const
