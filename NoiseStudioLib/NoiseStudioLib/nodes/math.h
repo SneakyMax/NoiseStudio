@@ -29,6 +29,7 @@ namespace nodes {
 
         void recalculate_sockets();
         void execute_uniforms(const CompositeDataBuffer &input, DataBuffer &output) const;
+        void validate(ValidationResults& results) const;
     };
 
 } }

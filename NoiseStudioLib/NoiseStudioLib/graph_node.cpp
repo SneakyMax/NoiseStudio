@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#include "validation_results.h"
+
 namespace noises
 {
     GraphNode::GraphNode() : name_(""), attribute_override_(AttributeInfo::inherit()), inputs_(this), outputs_(this), in_recalculate_sockets_(false)
@@ -170,6 +172,11 @@ namespace noises
         if(!potential_property)
             throw std::invalid_argument("No such property " + name);
         return potential_property->get();
+    }
+
+    void GraphNode::validate(ValidationResults&) const
+    {
+
     }
 }
 

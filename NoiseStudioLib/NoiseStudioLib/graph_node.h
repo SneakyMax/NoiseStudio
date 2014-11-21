@@ -15,6 +15,7 @@ namespace noises
 {
     class CompositeDataBuffer;
     class Property;
+    class ValidationResults;
 
     class GraphNode
     {
@@ -51,6 +52,8 @@ namespace noises
 
         /** Executes a graph node and computes its attribute outputs. This method is called once for each index in the final output (e.g. x/y) **/
         virtual void execute_attributes(const CompositeDataBuffer& input, DataBuffer& output, DataBuffer::size_type index) const;
+
+        virtual void validate(ValidationResults& results) const;
 
         int id() const;
         void set_id(int id);

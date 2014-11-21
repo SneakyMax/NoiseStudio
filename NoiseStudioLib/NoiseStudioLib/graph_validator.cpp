@@ -16,11 +16,22 @@ namespace noises
 
         //Cycles will make this not work, so only do it if there aren't any cycles
         if(results)
+        {
             verify_all_outputs_satisfied(results);
+            verify_all_nodes(results);
 
-        //TODO verify that all attributes connected to a node are the same length
+            //TODO verify that all attributes connected to a node are the same length
+        }
 
         return results;
+    }
+
+    void GraphValidator::verify_all_nodes(ValidationResults& results) const
+    {
+        for(const GraphNode& node : graph_.nodes())
+        {
+            node.validate(results);
+        }
     }
 
     void GraphValidator::verify_all_connections(ValidationResults &results) const

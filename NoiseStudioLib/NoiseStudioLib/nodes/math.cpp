@@ -1,6 +1,7 @@
 #include "math.h"
 
 #include "composite_data_buffer.h"
+#include "validation_results.h"
 
 namespace
 {
@@ -106,6 +107,26 @@ namespace nodes {
     std::string Math::node_name() const
     {
         return "Math";
+    }
+
+    void Math::validate(ValidationResults &results) const
+    {
+        const InputSocket& a_socket = input("A");
+        const InputSocket& b_socket = input("B");
+
+        auto a_connection = a_socket.connection();
+        auto b_connection = b_socket.connection();
+
+        if(!a_connection || !b_connection)
+            return; // Validation will be handled by the global validator
+
+        const ConnectionDataType& a_type = a_connection->get().data_type();
+        const ConnectionDataType& b_type = b_connection->get().data_type();
+
+        if(a_type != b_type)
+        {
+            results.add("Math node requires A and B to be the same data type. Try using converter nodes.");
+        }
     }
 } }
 

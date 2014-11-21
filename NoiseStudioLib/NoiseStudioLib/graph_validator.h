@@ -28,6 +28,8 @@ namespace noises
         void verify_node_satisfied(const GraphNode& node, ValidationResults& results) const;
         void verify_node_socket_satisfied(const GraphNode& node, const InputSocket& input_socket, ValidationResults& results) const;
 
+        void verify_all_nodes(ValidationResults& results) const;
+
         const Graph& graph_;
     };
 }
