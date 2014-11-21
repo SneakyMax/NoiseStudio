@@ -25,6 +25,15 @@ namespace noises
         const std::string& name() const;
 
         template<typename T, unsigned int Dimensions>
+        const ptr_array<T, Dimensions> value_or_default() const
+        {
+            check<T, Dimensions>();
+            if(has_value())
+                return value<T, Dimensions>();
+            return default_value<T, Dimensions>();
+        }
+
+        template<typename T, unsigned int Dimensions>
         const ptr_array<T, Dimensions> value() const
         {
             check<T, Dimensions>();

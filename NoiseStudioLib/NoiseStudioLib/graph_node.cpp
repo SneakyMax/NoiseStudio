@@ -148,5 +148,28 @@ namespace noises
     {
         recalculate_sockets_internal();
     }
+
+    bool GraphNode::is_graph_internal_node() const
+    {
+        return is_graph_internal_node_;
+    }
+
+    void GraphNode::set_is_graph_internal_node(bool is_internal)
+    {
+        is_graph_internal_node_ = is_internal;
+    }
+
+    Property& GraphNode::property(const std::string& name)
+    {
+        return const_cast<Property&>(static_cast<const GraphNode*>(this)->property(name));
+    }
+
+    const Property& GraphNode::property(const std::string& name) const
+    {
+        auto potential_property = get_property_by_name(name);
+        if(!potential_property)
+            throw std::invalid_argument("No such property " + name);
+        return potential_property->get();
+    }
 }
 

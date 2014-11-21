@@ -21,7 +21,8 @@ namespace noises
 
     GraphOutputs GraphExecutor::execute()
     {
-        if(!validate_graph())
+        auto validation = validate_graph();
+        if(!validation)
             throw std::logic_error("Could not execute graph. It is invalid.");
 
         get_topological_order();
@@ -67,6 +68,22 @@ namespace noises
         CompositeDataBuffer input_buffer(attribute_length);
         std::vector<unsigned char> empty_buffer;
 
+        add_attribute_dependencies(input_buffer, node, buffers, empty_buffer);
+        add_uniform_dependencies(input_buffer, node, buffers);
+
+        output_buffer.add(node.outputs());
+
+        node.execute_uniforms(input_buffer, output_buffer);
+
+        for(DataBuffer::size_type i = 0; i < attribute_length; i++)
+        {
+            node.execute_attributes(input_buffer, output_buffer, i);
+        }
+    }
+
+    void GraphExecutor::add_attribute_dependencies(CompositeDataBuffer &input_buffer, const GraphNode &node,
+                                                   std::unordered_map<int, std::reference_wrapper<DataBuffer>>& buffers, std::vector<unsigned char>& empty_buffer)
+    {
         for(const InputSocket& attribute_socket : node.inputs().attribute_sockets())
         {
             auto possible_connection = attribute_socket.connection();
@@ -79,6 +96,21 @@ namespace noises
 
                 DataBuffer& dependency_buffer = buffers.at(dependency_id);
                 input_buffer.add_attribute(connection.data_type(), dependency_buffer.get_memory_block(output_socket.index()));
+                continue;
+            }
+
+            // If it's graph internal node and doesn't have an input connection, assume it's an input to the graph manually
+            if(!(node.is_graph_internal_node() && attribute_socket.optional()))
+            {
+                input_buffer.add_attribute(ConnectionDataType::undefined(), empty_buffer);
+                continue;
+            }
+
+            auto graph_input = graph_.get_input_buffer(node.name());
+            if(graph_input)
+            {
+                const DataBuffer& input_attribute_buffer = graph_input->get();
+                input_buffer.add_attribute(input_attribute_buffer.get_attribute_type(0), input_attribute_buffer.get_memory_block(0));
             }
             else
             {
@@ -87,7 +119,11 @@ namespace noises
         }
 
         assert(input_buffer.num_attributes() == node.inputs().attribute_sockets().size());
+    }
 
+    void GraphExecutor::add_uniform_dependencies(CompositeDataBuffer &input_buffer, const GraphNode &node,
+                                                 std::unordered_map<int, std::reference_wrapper<DataBuffer>>& buffers)
+    {
         for(const InputSocket& uniform_socket : node.inputs().uniform_sockets())
         {
             auto possible_connection = uniform_socket.connection();
@@ -100,6 +136,20 @@ namespace noises
 
                 DataBuffer& dependency_buffer = buffers.at(dependency_id);
                 input_buffer.add_uniform(connection.data_type(), dependency_buffer.get_uniform_raw(output_socket, connection.data_type()));
+                continue;
+            }
+
+            if(!(node.is_graph_internal_node() && uniform_socket.optional()))
+            {
+                input_buffer.add_uniform(ConnectionDataType::undefined(), nullptr);
+                continue;
+            }
+
+            auto graph_input = graph_.get_input_buffer(node.name());
+            if(graph_input)
+            {
+                const DataBuffer& input_uniform_buffer = graph_input->get();
+                input_buffer.add_uniform(input_uniform_buffer.get_uniform_type(0), input_uniform_buffer.get_uniform_block(0));
             }
             else
             {
@@ -108,15 +158,6 @@ namespace noises
         }
 
         assert(input_buffer.num_uniforms() == node.inputs().uniform_sockets().size());
-
-        output_buffer.add(node.outputs());
-
-        node.execute_uniforms(input_buffer, output_buffer);
-
-        for(DataBuffer::size_type i = 0; i < attribute_length; i++)
-        {
-            node.execute_attributes(input_buffer, output_buffer, i);
-        }
     }
 
     std::unordered_map<int, std::reference_wrapper<DataBuffer>> GraphExecutor::get_node_dependency_buffers(const GraphNode &node)

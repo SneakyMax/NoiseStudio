@@ -25,9 +25,13 @@ namespace nodes
         const InputSocket& input() const;
         const OutputSocket& output() const;
 
+        void set_output_type(const ConnectionDataType& data_type);
+
     private:
         InputSocket* input_;
         OutputSocket* output_;
+
+        bool has_manual_output_type_;
     };
 } }
 

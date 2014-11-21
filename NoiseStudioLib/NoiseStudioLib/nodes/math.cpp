@@ -73,7 +73,8 @@ namespace nodes {
     void Math::execute_uniforms(const CompositeDataBuffer &input, DataBuffer &output) const
     {
         const Property& operation_prop = *get_property_by_name("Operation");
-        MathOperation operation = static_cast<MathOperation>(operation_prop.value<int, 1>().value());
+
+        MathOperation operation = static_cast<MathOperation>(operation_prop.value_or_default<int, 1>().value());
 
         const OutputSocket& output_socket = outputs()["Output"];
 

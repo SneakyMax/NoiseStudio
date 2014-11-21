@@ -11,6 +11,7 @@ namespace noises
 {
     class Graph;
     class GraphNode;
+    class CompositeDataBuffer;
 
     class GraphExecutor
     {
@@ -33,6 +34,8 @@ namespace noises
         std::size_t get_attribute_length(const GraphNode& node);
         std::unordered_map<int, std::reference_wrapper<DataBuffer>> get_node_dependency_buffers(const GraphNode& node);
         std::unique_ptr<DataBuffer> extract_buffer(const DataBuffer& buffer);
+        void add_attribute_dependencies(CompositeDataBuffer& input_buffer, const GraphNode& node, std::unordered_map<int, std::reference_wrapper<DataBuffer>>& buffers, std::vector<unsigned char>& empty_buffer);
+        void add_uniform_dependencies(CompositeDataBuffer& input_buffer, const GraphNode& node, std::unordered_map<int, std::reference_wrapper<DataBuffer>>& buffers);
 
         std::deque<std::vector<int>> topological_order_;
         std::deque<std::vector<std::pair<int, std::unique_ptr<DataBuffer>>>> buffer_stack_;

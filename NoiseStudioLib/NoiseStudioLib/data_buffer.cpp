@@ -50,17 +50,27 @@ namespace noises
     void DataBuffer::set_attribute_raw(const OutputSocket &socket, const ConnectionDataType& should_equal, size_type index, const unsigned char *value)
     {
         assert(socket.data_type() == should_equal);
-        size_type real_index = should_equal.size_full() * index;
-        unsigned char* ptr = &(attribute_memory_blocks_[socket.index()][real_index]);
-        std::copy(value, value + should_equal.size_full(), ptr);
+        set_attribute_raw(socket.index(), should_equal.size_full(), index, value);
+    }
+
+    void DataBuffer::set_attribute_raw(unsigned int socket_index, std::size_t value_size, size_type index, const unsigned char *value)
+    {
+        size_type real_index = value_size * index;
+        unsigned char* ptr = &(attribute_memory_blocks_[socket_index][real_index]);
+        std::copy(value, value + value_size, ptr);
     }
 
     void DataBuffer::set_attribute_all_raw(const OutputSocket &socket, const ConnectionDataType &should_equal, const unsigned char *value, std::size_t length_check)
     {
         assert(socket.data_type() == should_equal);
-        unsigned char* first_ptr = &(attribute_memory_blocks_[socket.index()][0]);
-        std::size_t size = attribute_memory_blocks_[socket.index()].size();
-        assert(size == length_check);
+        set_attribute_all_raw(socket.index(), value, length_check);
+    }
+
+    void DataBuffer::set_attribute_all_raw(unsigned int socket_index, const unsigned char *value, std::size_t length_check)
+    {
+        unsigned char* first_ptr = &(attribute_memory_blocks_[socket_index][0]);
+        std::size_t size = attribute_memory_blocks_[socket_index].size(); // Attribute memory block is initialized to the correct size
+        assert(length_check == size);
         std::copy(value, value + size, first_ptr);
     }
 
@@ -79,9 +89,14 @@ namespace noises
     void DataBuffer::set_uniform_raw(const OutputSocket &socket, const ConnectionDataType &should_equal, const unsigned char *value)
     {
         assert(socket.data_type() == should_equal);
-        size_type real_index(get_uniform_index(socket.index()));
+        set_uniform_raw(socket.index(), should_equal.size_full(), value);
+    }
+
+    void DataBuffer::set_uniform_raw(unsigned int socket_index, std::size_t value_size, const unsigned char *value)
+    {
+        size_type real_index(get_uniform_index(socket_index));
         unsigned char* ptr = &(uniform_memory_block_[real_index]);
-        std::copy(value, value + should_equal.size_full(), ptr);
+        std::copy(value, value + value_size, ptr);
     }
 
     DataBuffer::size_type DataBuffer::get_uniform_index(int index) const

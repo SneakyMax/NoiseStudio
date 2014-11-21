@@ -97,7 +97,7 @@ namespace noises
                 {
                     edges.erase(std::remove(edges.begin(), edges.end(), connection.id()), edges.end());
 
-                    const GraphNode& node_m = *connection.output().parent();
+                    const GraphNode& node_m = *connection.input().parent();
                     bool has_other_incoming_edges = false;
 
                     for(const InputSocket& m_input : node_m.inputs().all_sockets())
@@ -106,13 +106,13 @@ namespace noises
                         if(connection)
                         {
                             bool connection_has_incoming_edge = std::find(edges.begin(), edges.end(), connection->get().id()) != edges.end();
-                            if(connection_has_incoming_edge == false)
+                            if(connection_has_incoming_edge)
                                 has_other_incoming_edges = true;
                         }
                     }
 
                     if(has_other_incoming_edges == false)
-                        sorted_nodes.push_back(node_m.id());
+                        working_list.push_back(node_m.id());
                 }
             }
         }
@@ -145,19 +145,28 @@ namespace noises
         auto possible_connection = input_socket.connection();
         if(!possible_connection)
         {
-            std::string text = boost::str(boost::format("Output node %1% is missing an input connection.") % node.display_name());
+            if(!(node.is_graph_internal_node() && input_socket.optional()))
+            {
+                std::string text = boost::str(boost::format("Output node %1% is missing an input connection.") % node.display_name());
+                results.add(text);
+                return;
+            }
+
+            if(graph_.get_input_buffer(node.name()))
+                return;
+
+            std::string text = boost::str(boost::format("Output node %1% is missing an input connection, or is missing data being set directly on the Graph.") % node.display_name());
             results.add(text);
+            return;
         }
-        else
-        {
-            const Connection& connection = possible_connection->get();
-            const OutputSocket& output = connection.output();
 
-            if(output.parent() == nullptr)
-                throw std::logic_error("Output socket did not have a parent! Internal error!");
+        const Connection& connection = possible_connection->get();
+        const OutputSocket& output = connection.output();
 
-            verify_node_satisfied(*output.parent(), results);
-        }
+        if(output.parent() == nullptr)
+            throw std::logic_error("Output socket did not have a parent! Internal error!");
+
+        verify_node_satisfied(*output.parent(), results);
     }
 
     void GraphValidator::verify_node_satisfied(const GraphNode &node, ValidationResults &results) const
@@ -180,7 +189,7 @@ namespace noises
         {
             if(input_socket.optional() == false)
             {
-                std::string text = boost::str(boost::format("Node %1% is missing an input connection for %2, which is not optional.")
+                std::string text = boost::str(boost::format("Node %1% is missing an input connection for %2%, which is not optional.")
                                               % node.display_name() % input_socket.name());
                 results.add(text);
             }

@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "nodes/uniform_buffer.h"
 #include "nodes/attribute_buffer.h"
+#include "graph_executor.h"
 
 namespace noises
 {
@@ -169,6 +170,8 @@ namespace noises
         std::unique_ptr<GraphNode> buffer_node(new nodes::UniformBuffer);
         buffer_node->set_name(name);
         buffer_node->set_id(id_counter_);
+        buffer_node->set_is_graph_internal_node(true);
+        buffer_node->input("Input").set_optional(true);
         id_counter_++;
 
         GraphNode& buffer_node_ref = *buffer_node;
@@ -184,6 +187,8 @@ namespace noises
         std::unique_ptr<GraphNode> buffer_node(new nodes::AttributeBuffer);
         buffer_node->set_name(name);
         buffer_node->set_id(id_counter_);
+        buffer_node->set_is_graph_internal_node(true);
+        buffer_node->input("Input").set_optional(true);
         id_counter_++;
 
         GraphNode& buffer_node_ref = *buffer_node;
@@ -251,5 +256,91 @@ namespace noises
     const std::vector<std::reference_wrapper<const GraphNode>> Graph::input_nodes() const
     {
         return utils::to_reference_array_const(input_nodes_);
+    }
+    
+    void Graph::set_input_uniform_raw(const std::string &input_name, const ConnectionDataType &data_type, const unsigned char *data_ptr)
+    {
+        // Make sure there's an input node with [input_name] and it's a uniform type.
+        auto node_it = std::find_if(input_nodes_.begin(), input_nodes_.end(), [input_name](std::unique_ptr<GraphNode>& node) { return node->name() == input_name; });
+        if(node_it == input_nodes_.end())
+            throw std::invalid_argument(input_name + " is not a valid input.");
+        if((**node_it).output("Output").type() != SocketType::Uniform)
+            throw std::invalid_argument(input_name + " is not a uniform argument.");
+
+        auto existing_it = manual_input_buffers_.find(input_name);
+        if(existing_it != manual_input_buffers_.end())
+            manual_input_buffers_.erase(existing_it);
+        
+        std::unique_ptr<DataBuffer> new_buffer(new DataBuffer(0));
+
+        new_buffer->add_uniform(data_type);
+        new_buffer->set_uniform_raw(0, data_type.size_full(), data_ptr);
+
+        manual_input_buffers_.insert(std::pair<std::string, std::unique_ptr<DataBuffer>>(input_name, std::move(new_buffer)));
+
+        nodes::UniformBuffer& input_node = *this->get_uniform_input(input_name);
+        input_node.set_output_type(data_type);
+
+        refresh_all_sockets();
+    }
+    
+    void Graph::set_input_attribute_raw(const std::string &input_name, const ConnectionDataType &data_type, const unsigned char *data_ptr, DataBuffer::size_type attribute_length)
+    {
+        auto node_it = std::find_if(input_nodes_.begin(), input_nodes_.end(), [input_name](std::unique_ptr<GraphNode>& node) { return node->name() == input_name; });
+        if(node_it == input_nodes_.end())
+            throw std::invalid_argument(input_name + " is not a valid input.");
+        if((**node_it).output("Output").type() != SocketType::Attribute)
+            throw std::invalid_argument(input_name + " is not an attribute type.");
+
+        auto existing_it = manual_input_buffers_.find(input_name);
+        if(existing_it != manual_input_buffers_.end())
+            manual_input_buffers_.erase(existing_it);
+
+        std::unique_ptr<DataBuffer> new_buffer(new DataBuffer(attribute_length));
+
+        new_buffer->add_attribute(data_type);
+        new_buffer->set_attribute_all_raw(0, data_ptr, attribute_length * data_type.size_full());
+
+        manual_input_buffers_.insert(std::pair<std::string, std::unique_ptr<DataBuffer>>(input_name, std::move(new_buffer)));
+
+        AttributeInfo attribute_info(attribute_length, "unknown"); //todo
+
+        nodes::AttributeBuffer& input_node = *this->get_attribute_input(input_name);
+        input_node.set_output_type(data_type, attribute_info);
+
+        refresh_all_sockets();
+    }
+
+    boost::optional<std::reference_wrapper<const DataBuffer>> Graph::get_input_buffer(const std::string &input_name) const
+    {
+        auto it = manual_input_buffers_.find(input_name);
+        if(it == manual_input_buffers_.end())
+            return boost::none;
+
+        return std::ref(static_cast<const DataBuffer&>(*std::get<1>(*it)));
+    }
+
+    GraphOutputs Graph::execute() const
+    {
+        GraphExecutor executor(*this);
+        return executor.execute();
+    }
+
+    void Graph::refresh_all_sockets()
+    {
+        for(GraphNode& node : nodes())
+        {
+            node.request_recalculate_sockets();
+        }
+
+        for(GraphNode& node : input_nodes())
+        {
+            node.request_recalculate_sockets();
+        }
+
+        for(GraphNode& node : output_nodes())
+        {
+            node.request_recalculate_sockets();
+        }
     }
 }

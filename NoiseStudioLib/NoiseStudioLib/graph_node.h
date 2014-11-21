@@ -57,6 +57,9 @@ namespace noises
 
         boost::optional<AttributeInfo> get_attribute_override() const;
 
+        Property& property(const std::string& name);
+        const Property& property(const std::string& name) const;
+
         const std::vector<std::reference_wrapper<Property>> properties();
         const std::vector<std::reference_wrapper<const Property>> properties() const;
 
@@ -64,6 +67,10 @@ namespace noises
         boost::optional<std::reference_wrapper<const Property>> get_property_by_name(const std::string &name) const;
 
         void request_recalculate_sockets();
+
+        // Don't really like these public here...but works for now
+        bool is_graph_internal_node() const;
+        void set_is_graph_internal_node(bool is_internal);
 
     protected:
         template<typename T, unsigned int Dimensions>
@@ -95,6 +102,7 @@ namespace noises
 
         int id_;
         bool in_recalculate_sockets_;
+        bool is_graph_internal_node_;
 
     };
 }

@@ -18,6 +18,9 @@ namespace nodes {
     {
         auto connection = input_->connection();
 
+        if(has_manual_output_type_)
+            return;
+
         output_->set_data_type(connection ? connection->get().data_type() : ConnectionDataType::undefined());
     }
 
@@ -51,5 +54,13 @@ namespace nodes {
     const OutputSocket& AttributeBuffer::output() const
     {
         return *output_;
+    }
+
+    void AttributeBuffer::set_output_type(const ConnectionDataType &data_type, AttributeInfo attribute_info)
+    {
+        output_->set_data_type(data_type);
+        override_attribute_info(attribute_info);
+
+        has_manual_output_type_ = true;
     }
 } }

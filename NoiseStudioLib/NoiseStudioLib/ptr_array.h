@@ -123,32 +123,9 @@ namespace noises
 
         ptr_array(const std::vector<unsigned char>& vector) : ptr_(&vector[0]) { }
 
-        const unsigned char& at(std::size_t pos) const
-        {
-            if(!(pos >= 0 && pos < this->size()))
-                throw std::out_of_range("Pos out of range");
-            return ptr_[pos];
-        }
-
-        const unsigned char& operator[](std::size_t pos) const
-        {
-            return ptr_[pos];
-        }
-
-        const unsigned char* ptr() const
-        {
-            return ptr_;
-        }
-
-        const unsigned char* operator&() const
-        {
-            return ptr_;
-        }
-
-        const unsigned char* raw() const
-        {
-            return reinterpret_cast<const unsigned char*>(ptr_);
-        }
+        #define T unsigned char
+        #include "ptr_array_common.hpart"
+        #undef T
     private:
         const unsigned char* ptr_;
     };

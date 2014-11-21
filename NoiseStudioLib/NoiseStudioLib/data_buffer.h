@@ -88,20 +88,39 @@ namespace noises
         const ConnectionDataType& get_uniform_type(int index) const;
 
 
+        // Below are methods to interact with the raw data. Only use these if you have to. Prefer the templated methods.
+
         /** Gets a reference to a memory block for the attribute with the specified index. Used by a Connection to create a CompositeDataBuffer. **/
         const std::vector<unsigned char>& get_memory_block(int index) const;
 
         /** Gets a pointer to the first member of a data block containing uniform data. Used by a Connection to create a CompositeDataBuffer. **/
         const unsigned char* get_uniform_block(int index) const;
 
+        /** Gets a single attribute value as a raw byte array. Use this for library code that doesn't know the template parameters. */
         const unsigned char* get_attribute_raw(const OutputSocket& socket, const ConnectionDataType& should_equal, size_type index) const;
+        /** Gets a single attribute value as a raw byte array, with *no* type checking. only use this if you're sure you're messing with the right data type (dangerous). */
         const unsigned char* get_attribute_raw(unsigned int socket_index, size_type index) const;
-        void set_attribute_raw(const OutputSocket& socket, const ConnectionDataType& should_equal, size_type index, const unsigned char* value);
-        void set_attribute_all_raw(const OutputSocket& socket, const ConnectionDataType& should_equal, const unsigned char* value, std::size_t length_check);
 
+        /** Sets an attribute value as a raw byte array. Use this for library code that doesn't know the template parameters. */
+        void set_attribute_raw(const OutputSocket& socket, const ConnectionDataType& should_equal, size_type index, const unsigned char* value);
+        /** Sets an attribute value as a raw byte array, with *no* type checking. Only use this if you're sure you're messing with the right data type (dangerous). */
+        void set_attribute_raw(unsigned int socket_index, std::size_t value_size, size_type index, const unsigned char* value);
+
+        /** Sets the entire attribute using a raw byte array. Use this for library code that doesn't know the template parameters. */
+        void set_attribute_all_raw(const OutputSocket& socket, const ConnectionDataType& should_equal, const unsigned char* value, std::size_t length_check);
+        /** Sets the entire attribute using a raw byte array, with *no* type checking. Only use this if you're sure you're messing with the right data type (dangerous) */
+        void set_attribute_all_raw(unsigned int socket_index, const unsigned char* value, std::size_t length_check);
+
+
+        /** Gets a uniform as a raw byte array. Use this for library code that doesn't know the template parameters. */
         const unsigned char* get_uniform_raw(const OutputSocket& socket, const ConnectionDataType& should_equal) const;
+        /** Gets a uniform as a raw byte array, with *no* type checking. Only use this if you're sure you're messing with the right data type (dangerous). */
         const unsigned char* get_uniform_raw(unsigned int index) const;
+
+        /** Sets a uniform as a raw byte array. Use this for library code that doesn't know the template parameters. */
         void set_uniform_raw(const OutputSocket& socket, const ConnectionDataType& should_equal, const unsigned char* value);
+        /** Sets a uniform as a raw byte array, with *no* type checking. Only use this if you're sure you're messing with the right data type (dangerous). */
+        void set_uniform_raw(unsigned int socket_index, std::size_t value_size, const unsigned char* value);
 
     private:
         size_type get_uniform_index(int index) const;

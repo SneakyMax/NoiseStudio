@@ -5,6 +5,7 @@
 #include <memory>
 #include <boost/optional.hpp>
 #include <utility>
+#include <unordered_map>
 
 #include "graph_node.h"
 #include "nodes/attribute_buffer.h"
@@ -12,16 +13,17 @@
 
 namespace noises
 {
+    class GraphOutputs;
     class Graph
     {
     public:
         Graph();
 
-        /** Simple way to add a node to the graph, assuming the node has a default constructor. **/
-        template<typename T>
-        T& add_node()
+        /** Simple way to add a node to the graph. **/
+        template<typename T, typename... Args>
+        T& add_node(Args&&... args)
         {
-            std::unique_ptr<T> node(new T);
+            std::unique_ptr<T> node(new T(std::forward(args)... ));
             T& node_ref = *node;
             add_node(std::move(node));
             return node_ref;
@@ -87,6 +89,32 @@ namespace noises
         const std::vector<std::reference_wrapper<const GraphNode>> output_nodes() const;
         const std::vector<std::reference_wrapper<const GraphNode>> input_nodes() const;
 
+        /** Sets an input to the graph to be a static value. To be used when a graph is not embedded in another graph and takes input values. **/
+        template<typename ValueType, unsigned int Dimensions>
+        void set_input_uniform(const std::string& input_name, ptr_array<ValueType, Dimensions> value)
+        {
+            set_input_uniform_raw(input_name, ConnectionDataType::value<ValueType, Dimensions>(), value.raw());
+        }
+
+        /** Sets an input to the graph to be a static value. To be used when a graph is not embedded in another graph and takes input values. first_element is
+            a pointer to the first element of the first bundle (e.g. x in xyzxyzxyz)**/
+        template<typename ValueType, unsigned int Dimensions>
+        void set_input_attribute(const std::string& input_name, const ValueType* first_element, DataBuffer::size_type attribute_length)
+        {
+            const ConnectionDataType& type = ConnectionDataType::value<ValueType, Dimensions>();
+            set_input_attribute_raw(input_name, type, reinterpret_cast<unsigned char*>(first_element), attribute_length);
+        }
+
+        void set_input_uniform_raw(const std::string& input_name, const ConnectionDataType& data_type, const unsigned char* data_ptr);
+
+        void set_input_attribute_raw(const std::string& input_name, const ConnectionDataType& data_type, const unsigned char* data_ptr, DataBuffer::size_type attribute_length);
+
+        boost::optional<std::reference_wrapper<const DataBuffer>> get_input_buffer(const std::string& input_name) const;
+
+        GraphOutputs execute() const;
+
+        void refresh_all_sockets();
+
     private:
         void remove_connection(const Connection& connection);
 
@@ -94,7 +122,7 @@ namespace noises
         boost::optional<std::reference_wrapper<TBuffer>> get_buffer(const std::string& name, std::vector<std::unique_ptr<GraphNode>>& buffer_list)
         {
             auto it = std::find_if(buffer_list.begin(), buffer_list.end(), [name](std::unique_ptr<GraphNode>& node) { return node->name() == name; });
-            if(it == input_nodes_.end())
+            if(it == buffer_list.end())
                 return boost::none;
             return std::ref(dynamic_cast<TBuffer&>(**it));
         }
@@ -108,6 +136,8 @@ namespace noises
         std::vector<std::unique_ptr<GraphNode>> output_nodes_;
 
         PropertyCollection properties_;
+
+        std::unordered_map<std::string, std::unique_ptr<DataBuffer>> manual_input_buffers_;
     };
 }
 
