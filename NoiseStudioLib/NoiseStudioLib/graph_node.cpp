@@ -6,7 +6,7 @@
 
 namespace noises
 {
-    GraphNode::GraphNode() : name_(""), attribute_override_(AttributeInfo::inherit()), inputs_(this), outputs_(this), in_recalculate_sockets_(false)
+    GraphNode::GraphNode() : name_(""), attribute_override_(AttributeInfo::inherit()), inputs_(this), outputs_(this), in_recalculate_sockets_(false), parent_(nullptr)
     {
         inputs_.listen_socket_changed([this](const InputSocket&) { recalculate_sockets_internal(); });
         outputs_.listen_socket_changed([this](const OutputSocket&) { recalculate_sockets_internal(); });
@@ -177,6 +177,21 @@ namespace noises
     void GraphNode::validate(ValidationResults&) const
     {
 
+    }
+
+    void GraphNode::set_parent(Graph &parent)
+    {
+        parent_ = &parent;
+    }
+
+    Graph* GraphNode::parent()
+    {
+        return parent_;
+    }
+
+    const Graph* GraphNode::parent() const
+    {
+        return parent_;
     }
 }
 

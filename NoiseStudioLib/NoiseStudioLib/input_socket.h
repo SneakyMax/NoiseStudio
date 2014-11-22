@@ -27,6 +27,8 @@ namespace noises
         void set_connection(const Connection& connection);
         void remove_connection();
 
+        void on_removing();
+
     private:
         AcceptedTypes accepted_types_;
         bool optional_;

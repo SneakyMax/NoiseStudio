@@ -1,5 +1,8 @@
 #include "output_socket.h"
+
 #include "utils.h"
+#include "graph_node.h"
+#include "graph.h"
 
 namespace noises
 {
@@ -35,5 +38,15 @@ namespace noises
     void OutputSocket::remove_all_connections()
     {
         connections_.clear();
+    }
+
+    void OutputSocket::on_removing()
+    {
+        Graph* graph = parent()->parent();
+
+        if(graph == nullptr)
+            return;
+
+        graph->disconnect_all(*this);
     }
 }

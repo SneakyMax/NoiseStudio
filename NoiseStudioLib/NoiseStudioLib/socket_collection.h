@@ -27,7 +27,7 @@ namespace noises
         TSocket& add(const std::string& name, const ConnectionDataType& data_type, SocketType type);
 
         void add(std::unique_ptr<TSocket> socket);
-        void remove(const TSocket* socket);
+        void remove(TSocket& socket);
 
         boost::optional<std::reference_wrapper<TSocket>> get_by_name(const std::string& name);
 
@@ -122,16 +122,21 @@ namespace noises
     }
 
     template<typename TSocket>
-    void SocketCollection<TSocket>::remove(const TSocket *socket)
+    void SocketCollection<TSocket>::remove(TSocket& socket)
     {
-        auto& sockets = socket->type() == SocketType::uniform ? uniform_sockets_ : attribute_sockets_;
+        auto& sockets = socket.type() == SocketType::uniform ? uniform_sockets_ :
+                        socket.type() == SocketType::attribute ? attribute_sockets_ :
+                                                                  either_sockets_;
 
+        socket.on_removing();
         sockets.erase(sockets.begin() + socket.index());
 
         // Update the indexes for all the sockets
-        for(auto it = sockets.begin(), j = 0; it != sockets.end(); ++it, ++j)
+        auto it = sockets.begin();
+        int j = 0;
+        for(; it != sockets.end(); ++it, ++j)
         {
-            it->set_index(j);
+            (*it)->set_index(j);
         }
     }
 

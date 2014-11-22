@@ -11,6 +11,7 @@ namespace noises
     int Graph::add_node(std::unique_ptr<GraphNode> node)
     {
         node->set_id(id_counter_);
+        node->set_parent(*this);
         id_counter_++;
 
         GraphNode& node_ref = *node;

@@ -23,6 +23,9 @@ namespace nodes {
         dot,
         cross,
 
+        //binary trig
+        atan2,
+
         //unary
         negate,
         square_root,
@@ -40,10 +43,7 @@ namespace nodes {
         tan,
         asin,
         acos,
-        atan,
-
-        //binary trig
-        atan2
+        atan
     };
 
     class Math : public GraphNode
@@ -58,6 +58,15 @@ namespace nodes {
         void execute_attributes(const CompositeDataBuffer &input, DataBuffer &output, DataBuffer::size_type index) const;
 
         void validate(ValidationResults& results) const;
+
+    private:
+        void recalculate_sockets_unary();
+        void recalculate_sockets_binary();
+
+        void should_have_b();
+        void should_not_have_b();
+
+        void recalculate_num_sockets();
     };
 
 } }

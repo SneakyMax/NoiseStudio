@@ -278,3 +278,29 @@ TEST_CASE("Multiply a scalar array with a vector array", "")
     REQUIRE(out_3[1] == 24);
     REQUIRE(out_3[2] == 28);
 }
+
+TEST_CASE("Negation only takes one input.", "")
+{
+    Graph graph;
+
+    ConstantValue& value_1_node = graph.add_node<ConstantValue>();
+
+    value_1_node.set_value_single(1);
+
+    Math& math_node = graph.add_node<Math>();
+
+    int operation = static_cast<int>(MathOperation::negate);
+    math_node.property("Operation").set_value<int, 1>(&operation);
+
+    graph.connect(value_1_node.output("Value"), math_node.input("A"));
+
+    auto& graph_output_node = graph.add_uniform_output("Output");
+
+    graph.connect(math_node.output("Output"), graph_output_node.input("Input"));
+
+    GraphOutputs outputs = graph.execute();
+
+    int output = outputs.get_uniform<int, 1>("Output");
+
+    REQUIRE(output == -1);
+}

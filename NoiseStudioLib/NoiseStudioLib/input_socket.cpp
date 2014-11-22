@@ -1,5 +1,7 @@
 #include "input_socket.h"
 
+#include "graph.h"
+
 namespace noises
 {
     InputSocket::InputSocket(const std::string& name, SocketType type) :
@@ -48,5 +50,14 @@ namespace noises
     {
         optional_ = optional;
         trigger_changed();
+    }
+
+    void InputSocket::on_removing()
+    {
+        Graph* graph = parent()->parent();
+        if(graph == nullptr)
+            return;
+
+        graph->disconnect(*this);
     }
 }

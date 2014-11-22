@@ -194,7 +194,7 @@ namespace
     }
 
     template<typename T>
-    std::vector<T> vector_unary_math_operation(MathOperation operation, const ConnectionDataType& data_type, T* a)
+    std::vector<T> vector_unary_math_operation(MathOperation operation, const ConnectionDataType& data_type, const T* a)
     {
         std::vector<T> out(data_type.dimensions());
 
@@ -242,7 +242,7 @@ namespace
     }
 
     template<typename T>
-    void execute_math_operation(MathOperation operation,
+    void execute_math_operation_binary(MathOperation operation,
                                 const InputSocket& a, const InputSocket& b,
                                 const OutputSocket& output_socket,
                                 const CompositeDataBuffer& input, DataBuffer& output,
@@ -398,12 +398,61 @@ namespace
         }
         else throw std::logic_error("What happened?");
     }
+
+    template<typename T>
+    void execute_math_operation_unary(MathOperation operation,
+                                      const InputSocket& a,
+                                      const OutputSocket& output_socket,
+                                      const CompositeDataBuffer& input, DataBuffer& output,
+                                      DataBuffer::size_type index = 0)
+    {
+        const ConnectionDataType& a_type = a.connection()->get().data_type();
+        SocketType a_socket_type = a.connection()->get().output().type();
+        bool is_attribute = a_socket_type == SocketType::attribute;
+
+        if(a_type.dimensions() == 1)
+        {
+            ptr_array<T, 1> a_value;
+
+            if(is_attribute)
+                a_value = input.get_attribute<T, 1>(a, index);
+            else
+                a_value = input.get_uniform<T, 1>(a);
+
+            T result = scalar_unary_math_operation(operation, a_value.value());
+
+            if(is_attribute)
+                output.set_attribute<T, 1>(output_socket, index, &result);
+            else
+                output.set_uniform<T, 1>(output_socket, &result);
+        }
+        else
+        {
+            const T* a_value;
+
+            if(is_attribute)
+                a_value = reinterpret_cast<const T*>(input.get_attribute_raw(a, a_type, index));
+            else
+                a_value = reinterpret_cast<const T*>(input.get_uniform_raw(a, a_type));
+
+            std::vector<T> result = vector_unary_math_operation(operation, a_type, a_value);
+
+            if(is_attribute)
+                output.set_attribute_raw(output_socket, a_type, index, reinterpret_cast<const unsigned char*>(&result[0]));
+            else
+                output.set_uniform_raw(output_socket, a_type, reinterpret_cast<const unsigned char*>(&result[0]));
+        }
+    }
 }
 
 namespace noises {
 namespace nodes {
     Math::Math()
     {
+        Property& operation = add_property<int, 1>("Operation");
+        int default_operation = (int)MathOperation::add;
+        operation.set_default_value<int, 1>(&default_operation);
+
         inputs().add("A", SocketType::either);
         inputs().add("B", SocketType::either);
 
@@ -411,13 +460,59 @@ namespace nodes {
 
         input("A").set_accepts(ConnectionDataType::any()); // we do better validation in validate
         input("B").set_accepts(ConnectionDataType::any());
-
-        Property& operation = add_property<int, 1>("Operation");
-        int default_operation = (int)MathOperation::add;
-        operation.set_default_value<int, 1>(&default_operation);
     }
 
     void Math::recalculate_sockets()
+    {
+        if(!inputs().get_by_name("A"))
+            return; //Still initializing
+
+        recalculate_num_sockets();
+
+        if(inputs().get_by_name("B"))
+        {
+            recalculate_sockets_binary();
+        }
+        else
+        {
+            recalculate_sockets_unary();
+        }
+    }
+
+    void Math::recalculate_num_sockets()
+    {
+        Property& operation_prop = property("Operation");
+        MathOperation operation = static_cast<MathOperation>(operation_prop.value_or_default<int, 1>().value());
+
+        // Everything before negate is binary, everything after is unary
+        if(static_cast<int>(operation) >= static_cast<int>(MathOperation::negate))
+        {
+            should_not_have_b();
+        }
+        else
+        {
+            should_have_b();
+        }
+    }
+
+    void Math::should_have_b()
+    {
+        if(inputs().get_by_name("B"))
+            return;
+
+        inputs().add("B", SocketType::either);
+        input("B").set_accepts(ConnectionDataType::any());
+    }
+
+    void Math::should_not_have_b()
+    {
+        if(!inputs().get_by_name("B"))
+            return;
+
+        inputs().remove(input("B"));
+    }
+
+    void Math::recalculate_sockets_binary()
     {
         // Match the output type to the input type
         auto a_connection = input("A").connection();
@@ -434,6 +529,10 @@ namespace nodes {
             const Connection& connection = *b_connection;
             output("Output").set_data_type(connection.data_type());
             outputs().change_type("Output", connection.output().type());
+        }
+        else
+        {
+            output("Output").set_data_type(ConnectionDataType::undefined());
         }
 
         if(a_connection && b_connection)
@@ -462,6 +561,22 @@ namespace nodes {
         }
     }
 
+    void Math::recalculate_sockets_unary()
+    {
+        auto a_connection = input("A").connection();
+
+        if(a_connection)
+        {
+            const Connection& connection = *a_connection;
+            output("Output").set_data_type(connection.data_type());
+            outputs().change_type("Output", connection.output().type());
+        }
+        else
+        {
+            output("Output").set_data_type(ConnectionDataType::undefined());
+        }
+    }
+
     void Math::execute_uniforms(const CompositeDataBuffer &input, DataBuffer &output) const
     {
         if(this->output("Output").type() == SocketType::attribute)
@@ -474,21 +589,39 @@ namespace nodes {
         const OutputSocket& output_socket = this->output("Output");
 
         const InputSocket& a_socket = this->input("A");
-        const InputSocket& b_socket = this->input("B");
-
         const ConnectionDataType& a_type = a_socket.connection()->get().data_type();
 
-        if(a_type.is<int>())
+        if(inputs().get_by_name("B"))
         {
-            execute_math_operation<int>(operation, a_socket, b_socket, output_socket, input, output);
+            const InputSocket& b_socket = this->input("B");
+
+            if(a_type.is<int>())
+            {
+                execute_math_operation_binary<int>(operation, a_socket, b_socket, output_socket, input, output);
+            }
+            else if(a_type.is<float>())
+            {
+                execute_math_operation_binary<float>(operation, a_socket, b_socket, output_socket, input, output);
+            }
+            else if(a_type.is<double>())
+            {
+                execute_math_operation_binary<double>(operation, a_socket, b_socket, output_socket, input, output);
+            }
         }
-        else if(a_type.is<float>())
+        else
         {
-            execute_math_operation<float>(operation, a_socket, b_socket, output_socket, input, output);
-        }
-        else if(a_type.is<double>())
-        {
-            execute_math_operation<double>(operation, a_socket, b_socket, output_socket, input, output);
+            if(a_type.is<int>())
+            {
+                execute_math_operation_unary<int>(operation, a_socket, output_socket, input, output);
+            }
+            else if(a_type.is<float>())
+            {
+                execute_math_operation_unary<float>(operation, a_socket, output_socket, input, output);
+            }
+            else if(a_type.is<double>())
+            {
+                execute_math_operation_unary<double>(operation, a_socket, output_socket, input, output);
+            }
         }
     }
 
@@ -508,18 +641,38 @@ namespace nodes {
 
         const ConnectionDataType& a_type = a_socket.connection()->get().data_type();
 
-        if(a_type.is<int>())
+        if(inputs().get_by_name("B"))
         {
-            execute_math_operation<int>(operation, a_socket, b_socket, output_socket, input, output, index);
+            if(a_type.is<int>())
+            {
+                execute_math_operation_binary<int>(operation, a_socket, b_socket, output_socket, input, output, index);
+            }
+            else if(a_type.is<float>())
+            {
+                execute_math_operation_binary<float>(operation, a_socket, b_socket, output_socket, input, output, index);
+            }
+            else if(a_type.is<double>())
+            {
+                execute_math_operation_binary<double>(operation, a_socket, b_socket, output_socket, input, output, index);
+            }
         }
-        else if(a_type.is<float>())
+        else
         {
-            execute_math_operation<float>(operation, a_socket, b_socket, output_socket, input, output, index);
+            if(a_type.is<int>())
+            {
+                execute_math_operation_unary<int>(operation, a_socket, output_socket, input, output, index);
+            }
+            else if(a_type.is<float>())
+            {
+                execute_math_operation_unary<float>(operation, a_socket, output_socket, input, output, index);
+            }
+            else if(a_type.is<double>())
+            {
+                execute_math_operation_unary<double>(operation, a_socket, output_socket, input, output, index);
+            }
         }
-        else if(a_type.is<double>())
-        {
-            execute_math_operation<double>(operation, a_socket, b_socket, output_socket, input, output, index);
-        }
+
+
     }
 
     std::string Math::node_name() const
@@ -529,38 +682,58 @@ namespace nodes {
 
     void Math::validate(ValidationResults &results) const
     {
-        const InputSocket& a_socket = input("A");
-        const InputSocket& b_socket = input("B");
-
-        auto a_connection = a_socket.connection();
-        auto b_connection = b_socket.connection();
-
-        if(!a_connection || !b_connection)
-            return; // Validation will be handled by the global validator
-
-        const ConnectionDataType& a_type = a_connection->get().data_type();
-        const ConnectionDataType& b_type = b_connection->get().data_type();
-
-        if((a_type.is<float>() || a_type.is<int>() || a_type.is<double>()) == false ||
-           (b_type.is<float>() || b_type.is<int>() || b_type.is<double>()) == false)
+        if(inputs().get_by_name("B"))
         {
-            results.add("Math node only supports float, int, or double data types (uniform or attribute)");
+            const InputSocket& a_socket = input("A");
+            const InputSocket& b_socket = input("B");
+
+            auto a_connection = a_socket.connection();
+            auto b_connection = b_socket.connection();
+
+            if(!a_connection || !b_connection)
+                return; // Validation will be handled by the global validator
+
+            const ConnectionDataType& a_type = a_connection->get().data_type();
+            const ConnectionDataType& b_type = b_connection->get().data_type();
+
+            if((a_type.is<float>() || a_type.is<int>() || a_type.is<double>()) == false ||
+               (b_type.is<float>() || b_type.is<int>() || b_type.is<double>()) == false)
+            {
+                results.add("Math node only supports float, int, or double data types (uniform or attribute)");
+            }
+
+            if(a_type.is_same_type(b_type) == false)
+            {
+                results.add("Math node A and B must be the same data type (not neccesarily dimension size too). Try using converter nodes.");
+            }
+
+            if(a_type.dimensions() == 0 || b_type.dimensions() == 0)
+            {
+                results.add("An input is dimensionless.");
+            }
+
+            if((a_type.dimensions() == 1 || b_type.dimensions() == 1) == false && a_type.dimensions() != b_type.dimensions())
+            {
+                results.add("Math node supports math operations on two scalars, two same-sized vectors, or one vector and one scalar.");
+            }
+        }
+        else
+        {
+            const InputSocket& a_socket = input("A");
+            auto a_connection = a_socket.connection();
+            const ConnectionDataType& a_type = a_connection->get().data_type();
+
+            if((a_type.is<float>() || a_type.is<int>() || a_type.is<double>()) == false)
+            {
+                results.add("Math node only supports float, int, or double data types (uniform or attribute)");
+            }
+
+            if(a_type.dimensions() == 0)
+            {
+                results.add("An input is dimensionless.");
+            }
         }
 
-        if(a_type.is_same_type(b_type) == false)
-        {
-            results.add("Math node A and B must be the same data type (not neccesarily dimension size too). Try using converter nodes.");
-        }
-
-        if(a_type.dimensions() == 0 || b_type.dimensions() == 0)
-        {
-            results.add("An input is dimensionless.");
-        }
-
-        if((a_type.dimensions() == 1 || b_type.dimensions() == 1) == false && a_type.dimensions() != b_type.dimensions())
-        {
-            results.add("Math node supports math operations on two scalars, two same-sized vectors, or one vector and one scalar.");
-        }
     }
 } }
 

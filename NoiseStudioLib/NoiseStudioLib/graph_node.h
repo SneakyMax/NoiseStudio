@@ -75,6 +75,10 @@ namespace noises
         bool is_graph_internal_node() const;
         void set_is_graph_internal_node(bool is_internal);
 
+        void set_parent(Graph& parent);
+        Graph* parent();
+        const Graph* parent() const;
+
     protected:
         template<typename T, unsigned int Dimensions>
         Property& add_property(const std::string& name)
@@ -106,6 +110,8 @@ namespace noises
         int id_;
         bool in_recalculate_sockets_;
         bool is_graph_internal_node_;
+
+        Graph* parent_;
 
     };
 }
