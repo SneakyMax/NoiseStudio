@@ -6,10 +6,13 @@ namespace noises
     enum class SocketType
     {
         /** Attributes vary for each position in the output data **/
-        Attribute,
+        attribute,
 
-        /** Uniforms are the same for each posision in the output data **/
-        Uniform
+        /** Uniforms are the same for each position in the output data **/
+        uniform,
+
+        /** For use on input sockets, when a socket will accept either uniform or attribute connections. **/
+        either
     };
 }
 

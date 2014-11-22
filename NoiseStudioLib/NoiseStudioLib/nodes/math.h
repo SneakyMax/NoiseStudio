@@ -10,14 +10,40 @@ namespace nodes {
 
     enum class MathOperation
     {
+        //binary
         add,
         subtract,
         multiply,
         divide,
         exponent,
-        logorithm
+        logorithm,
+        mod,
 
-        //TODO single-operator math operations (need to remove/hide the B input)
+        //binary vectors
+        dot,
+        cross,
+
+        //unary
+        negate,
+        square_root,
+        cube_root,
+        log_e,
+        log_10,
+        log_2,
+        ceiling,
+        floor,
+        round,
+
+        //unary trig
+        sin,
+        cos,
+        tan,
+        asin,
+        acos,
+        atan,
+
+        //binary trig
+        atan2
     };
 
     class Math : public GraphNode
@@ -29,6 +55,8 @@ namespace nodes {
 
         void recalculate_sockets();
         void execute_uniforms(const CompositeDataBuffer &input, DataBuffer &output) const;
+        void execute_attributes(const CompositeDataBuffer &input, DataBuffer &output, DataBuffer::size_type index) const;
+
         void validate(ValidationResults& results) const;
     };
 

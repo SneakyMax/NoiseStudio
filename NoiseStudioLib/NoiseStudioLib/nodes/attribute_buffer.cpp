@@ -3,10 +3,10 @@
 
 namespace noises {
 namespace nodes {
-    AttributeBuffer::AttributeBuffer()
+    AttributeBuffer::AttributeBuffer() : input_(nullptr), output_(nullptr), has_manual_output_type_(false)
     {
-        outputs().add("Output", ConnectionDataType::undefined(), SocketType::Attribute);
-        inputs().add("Input", SocketType::Attribute);
+        outputs().add("Output", ConnectionDataType::undefined(), SocketType::attribute);
+        inputs().add("Input", SocketType::attribute);
 
         input_ = &inputs()["Input"];
         output_ = &outputs()["Output"];
@@ -59,8 +59,8 @@ namespace nodes {
     void AttributeBuffer::set_output_type(const ConnectionDataType &data_type, AttributeInfo attribute_info)
     {
         output_->set_data_type(data_type);
-        override_attribute_info(attribute_info);
 
         has_manual_output_type_ = true;
+        override_attribute_info(attribute_info);
     }
 } }

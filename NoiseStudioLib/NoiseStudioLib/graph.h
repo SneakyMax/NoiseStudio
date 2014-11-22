@@ -102,7 +102,7 @@ namespace noises
         void set_input_attribute(const std::string& input_name, const ValueType* first_element, DataBuffer::size_type attribute_length)
         {
             const ConnectionDataType& type = ConnectionDataType::value<ValueType, Dimensions>();
-            set_input_attribute_raw(input_name, type, reinterpret_cast<unsigned char*>(first_element), attribute_length);
+            set_input_attribute_raw(input_name, type, reinterpret_cast<const unsigned char*>(first_element), attribute_length);
         }
 
         void set_input_uniform_raw(const std::string& input_name, const ConnectionDataType& data_type, const unsigned char* data_ptr);

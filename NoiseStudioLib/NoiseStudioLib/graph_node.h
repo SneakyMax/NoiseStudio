@@ -38,8 +38,8 @@ namespace noises
         SocketCollection<InputSocket>& inputs();
         SocketCollection<OutputSocket>& outputs();
 
-        virtual const SocketCollection<InputSocket>& inputs() const;
-        virtual const SocketCollection<OutputSocket>& outputs() const;
+        const SocketCollection<InputSocket>& inputs() const;
+        const SocketCollection<OutputSocket>& outputs() const;
 
         InputSocket& input(const std::string& name);
         const InputSocket& input(const std::string& name) const;

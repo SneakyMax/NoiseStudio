@@ -42,9 +42,19 @@ namespace noises
             return name_;
         }
 
+        int dimensions() const
+        {
+            return dimensions_;
+        }
+
         std::string name_description() const
         {
             return "[" + name_ + ", " + boost::lexical_cast<std::string>(dimensions_) + "]";
+        }
+
+        bool is_same_type(const ConnectionDataType& other) const
+        {
+            return equals(*dimensionless_, *other.dimensionless_);
         }
 
         template<typename ValueType, unsigned int Dimensions>

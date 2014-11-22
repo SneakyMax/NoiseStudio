@@ -63,4 +63,10 @@ namespace noises
     {
         listeners_.push_back(handler);
     }
+
+    void Socket::set_type(SocketType type)
+    {
+        type_ = type;
+        trigger_changed();
+    }
 }

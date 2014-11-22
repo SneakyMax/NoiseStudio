@@ -23,6 +23,7 @@ namespace noises
         void set_index(int index);
 
         SocketType type() const;
+        void set_type(SocketType type);
 
         Socket(const Socket&) = delete;
         Socket& operator=(const Socket&) = delete;

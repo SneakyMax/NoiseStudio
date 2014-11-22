@@ -11,6 +11,8 @@ namespace noises
     class ptr_array
     {
     public:
+        ptr_array() : ptr_(nullptr) { }
+
         ptr_array(const T* ptr) : ptr_(ptr) { }
 
         ptr_array(const std::array<T, N>& array) : ptr_(&array[0]) { }
@@ -33,7 +35,7 @@ namespace noises
         {
             const unsigned char* raw_ptr = raw();
             vector.resize(N * sizeof(T));
-            std::copy(raw_ptr, raw_ptr + N, &vector[0]);
+            std::copy(raw_ptr, raw_ptr + (N * sizeof(T)), &vector[0]);
         }
 
     private:
@@ -44,6 +46,8 @@ namespace noises
     class ptr_array<T, 1>
     {
     public:
+        ptr_array() : ptr_(nullptr) { }
+
         ptr_array(const T* ptr) : ptr_(ptr) { }
 
         ptr_array(const std::array<T, 1>& array) : ptr_(&array[0]) { }
@@ -106,7 +110,7 @@ namespace noises
         {
             const unsigned char* raw_ptr = raw();
             vector.resize(sizeof(T));
-            std::copy(raw_ptr, raw_ptr + 1, &vector[0]);
+            std::copy(raw_ptr, raw_ptr + sizeof(T), &vector[0]);
         }
 
     private:
@@ -117,6 +121,8 @@ namespace noises
     class ptr_array<unsigned char, N>
     {
     public:
+        ptr_array() : ptr_(nullptr) { }
+
         ptr_array(const unsigned char* ptr) : ptr_(ptr) { }
 
         ptr_array(const std::array<unsigned char, N>& array) : ptr_(&array[0]) { }
@@ -126,6 +132,20 @@ namespace noises
         #define T unsigned char
         #include "ptr_array_common.hpart"
         #undef T
+
+        std::array<unsigned char, N> array() const
+        {
+            std::array<unsigned char, N> arr;
+            unsigned char* first(arr[0]);
+            std::copy(ptr_, ptr_ + sizeof(unsigned char), first);
+            return arr;
+        }
+
+        void copy_to(std::vector<unsigned char>& vector) const
+        {
+            vector.resize(N * sizeof(unsigned char));
+            std::copy(ptr_, ptr_ + (N * sizeof(unsigned char)), &vector[0]);
+        }
     private:
         const unsigned char* ptr_;
     };

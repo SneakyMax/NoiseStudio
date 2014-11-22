@@ -33,7 +33,7 @@ TEST_CASE("Testing DataBuffer", "")
     {
         int n = 4;
         DataBuffer d(n);
-        OutputSocket socket("int", ConnectionDataType::value<int, 1>(), SocketType::Attribute);
+        OutputSocket socket("int", ConnectionDataType::value<int, 1>(), SocketType::attribute);
 
         d.add_attribute(ConnectionDataType::value<int, 1>());
 
@@ -48,7 +48,7 @@ TEST_CASE("Testing DataBuffer", "")
     {
         int n = 4;
         DataBuffer d(n);
-        OutputSocket socket("int", ConnectionDataType::value<int, 1>(), SocketType::Attribute);
+        OutputSocket socket("int", ConnectionDataType::value<int, 1>(), SocketType::attribute);
 
         d.add_attribute(ConnectionDataType::value<int, 1>());
 
@@ -69,7 +69,7 @@ TEST_CASE("Testing DataBuffer", "")
     {
         int n = 4;
         DataBuffer d(n);
-        OutputSocket socket("int", ConnectionDataType::value<int, 3>(), SocketType::Attribute);
+        OutputSocket socket("int", ConnectionDataType::value<int, 3>(), SocketType::attribute);
 
         d.add_attribute(ConnectionDataType::value<int, 3>());
 
@@ -95,9 +95,9 @@ TEST_CASE("Testing DataBuffer", "")
 
         SocketCollection<OutputSocket> sockets(nullptr);
 
-        sockets.add(std::unique_ptr<OutputSocket>(new OutputSocket("position", ConnectionDataType::value<float, 3>(), SocketType::Attribute)));
+        sockets.add(std::unique_ptr<OutputSocket>(new OutputSocket("position", ConnectionDataType::value<float, 3>(), SocketType::attribute)));
 
-        sockets.add(std::unique_ptr<OutputSocket>(new OutputSocket("color", ConnectionDataType::value<unsigned char, 3>(), SocketType::Attribute)));
+        sockets.add(std::unique_ptr<OutputSocket>(new OutputSocket("color", ConnectionDataType::value<unsigned char, 3>(), SocketType::attribute)));
 
         d.add(sockets);
 
@@ -131,7 +131,7 @@ TEST_CASE("Testing DataBuffer", "")
     SECTION("Can get and set uniform")
     {
         DataBuffer d(1);
-        OutputSocket socket("int", ConnectionDataType::value<int, 3>(), SocketType::Uniform);
+        OutputSocket socket("int", ConnectionDataType::value<int, 3>(), SocketType::uniform);
 
         d.add_uniform(ConnectionDataType::value<int, 3>());
 
@@ -155,9 +155,9 @@ TEST_CASE("Testing DataBuffer", "")
         SocketCollection<OutputSocket> sockets(nullptr);
 
         sockets.add(std::unique_ptr<OutputSocket>(
-            new OutputSocket("a", ConnectionDataType::value<int, 2>(), SocketType::Uniform)));
+            new OutputSocket("a", ConnectionDataType::value<int, 2>(), SocketType::uniform)));
         sockets.add(std::unique_ptr<OutputSocket>(
-            new OutputSocket("b", ConnectionDataType::value<float, 1>(), SocketType::Uniform)));
+            new OutputSocket("b", ConnectionDataType::value<float, 1>(), SocketType::uniform)));
 
         d.add(sockets);
 

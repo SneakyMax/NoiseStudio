@@ -22,7 +22,7 @@ TEST_CASE("Composite data buffer add/get uniforms")
 
     DataBuffer d(4);
 
-    OutputSocket output("int", ConnectionDataType::value<int, 3>(), SocketType::Uniform);
+    OutputSocket output("int", ConnectionDataType::value<int, 3>(), SocketType::uniform);
     d.add_uniform(ConnectionDataType::value<int, 3>());
 
     int data[] = { 1, 2, 3 };
@@ -39,7 +39,7 @@ TEST_CASE("Composite data buffer add/get uniforms")
 
     SECTION("Can retrieve uniform")
     {
-        InputSocket input("int", SocketType::Uniform);
+        InputSocket input("int", SocketType::uniform);
         input.set_accepts(ConnectionDataType::value<int, 3>());
 
         auto data_ret = c.get_uniform<int, 3>(input);
@@ -56,7 +56,7 @@ TEST_CASE("Composite data buffer add/get attribute", "")
     CompositeDataBuffer c(n);
     DataBuffer d(n);
 
-    OutputSocket output("int", ConnectionDataType::value<int, 3>(), SocketType::Attribute);
+    OutputSocket output("int", ConnectionDataType::value<int, 3>(), SocketType::attribute);
     d.add_attribute(ConnectionDataType::value<int, 3>());
 
     for(int i = 0; i < n; i++)
@@ -79,7 +79,7 @@ TEST_CASE("Composite data buffer add/get attribute", "")
 
     SECTION("Can get attribute data")
     {
-        InputSocket input("int", SocketType::Attribute);
+        InputSocket input("int", SocketType::attribute);
         input.set_accepts(ConnectionDataType::value<int, 3>());
 
         for(int i = 0; i < n; i++)
@@ -99,17 +99,17 @@ TEST_CASE("Multiple attributes flip-flop")
     SocketCollection<InputSocket> inputs(nullptr);
 
     outputs.add(std::unique_ptr<OutputSocket>(
-        new OutputSocket("a", ConnectionDataType::value<int, 2>(), SocketType::Attribute)));
+        new OutputSocket("a", ConnectionDataType::value<int, 2>(), SocketType::attribute)));
 
     outputs.add(std::unique_ptr<OutputSocket>(
-        new OutputSocket("b", ConnectionDataType::value<float, 2>(), SocketType::Attribute)));
+        new OutputSocket("b", ConnectionDataType::value<float, 2>(), SocketType::attribute)));
 
     // Inputs are added b, a instead of a, b
     inputs.add(std::unique_ptr<InputSocket>(
-        new InputSocket("b", SocketType::Attribute)));
+        new InputSocket("b", SocketType::attribute)));
 
     inputs.add(std::unique_ptr<InputSocket>(
-        new InputSocket("a", SocketType::Attribute)));
+        new InputSocket("a", SocketType::attribute)));
 
     inputs["b"].set_accepts(ConnectionDataType::value<float, 2>());
     inputs["a"].set_accepts(ConnectionDataType::value<int, 2>());

@@ -50,7 +50,7 @@ namespace nodes
             if(outputs().get_by_name(socket_name))
                 return;
 
-            value_socket_ = &outputs().add(socket_name, ConnectionDataType::value<T, Dimensions>(), SocketType::Uniform);
+            value_socket_ = &outputs().add(socket_name, ConnectionDataType::value<T, Dimensions>(), SocketType::uniform);
         }
 
         std::vector<unsigned char> buffer_;

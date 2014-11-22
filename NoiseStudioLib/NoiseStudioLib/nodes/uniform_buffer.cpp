@@ -6,8 +6,8 @@ namespace nodes
 {
     UniformBuffer::UniformBuffer() : input_(nullptr), output_(nullptr), has_manual_output_type_(false)
     {
-        outputs().add("Output", ConnectionDataType::undefined(), SocketType::Uniform);
-        inputs().add("Input", SocketType::Uniform);
+        outputs().add("Output", ConnectionDataType::undefined(), SocketType::uniform);
+        inputs().add("Input", SocketType::uniform);
 
         input_ = &inputs()["Input"];
         output_ = &outputs()["Output"];

@@ -140,6 +140,8 @@ namespace noises
         std::unique_ptr<GraphNode> buffer_node(new nodes::AttributeBuffer);
         buffer_node->set_name(name);
         buffer_node->set_id(id_counter_);
+        buffer_node->set_is_graph_internal_node(true);
+        buffer_node->input("Input").set_accepts(ConnectionDataType::any());
         id_counter_++;
 
         GraphNode& buffer_node_ref = *buffer_node;
@@ -155,6 +157,8 @@ namespace noises
         std::unique_ptr<GraphNode> buffer_node(new nodes::UniformBuffer);
         buffer_node->set_name(name);
         buffer_node->set_id(id_counter_);
+        buffer_node->set_is_graph_internal_node(true);
+        buffer_node->input("Input").set_accepts(ConnectionDataType::any());
         id_counter_++;
 
         GraphNode& buffer_node_ref = *buffer_node;
@@ -264,7 +268,7 @@ namespace noises
         auto node_it = std::find_if(input_nodes_.begin(), input_nodes_.end(), [input_name](std::unique_ptr<GraphNode>& node) { return node->name() == input_name; });
         if(node_it == input_nodes_.end())
             throw std::invalid_argument(input_name + " is not a valid input.");
-        if((**node_it).output("Output").type() != SocketType::Uniform)
+        if((**node_it).output("Output").type() != SocketType::uniform)
             throw std::invalid_argument(input_name + " is not a uniform argument.");
 
         auto existing_it = manual_input_buffers_.find(input_name);
@@ -280,6 +284,7 @@ namespace noises
 
         nodes::UniformBuffer& input_node = *this->get_uniform_input(input_name);
         input_node.set_output_type(data_type);
+        input_node.input().set_accepts(data_type);
 
         refresh_all_sockets();
     }
@@ -289,7 +294,7 @@ namespace noises
         auto node_it = std::find_if(input_nodes_.begin(), input_nodes_.end(), [input_name](std::unique_ptr<GraphNode>& node) { return node->name() == input_name; });
         if(node_it == input_nodes_.end())
             throw std::invalid_argument(input_name + " is not a valid input.");
-        if((**node_it).output("Output").type() != SocketType::Attribute)
+        if((**node_it).output("Output").type() != SocketType::attribute)
             throw std::invalid_argument(input_name + " is not an attribute type.");
 
         auto existing_it = manual_input_buffers_.find(input_name);
@@ -307,6 +312,7 @@ namespace noises
 
         nodes::AttributeBuffer& input_node = *this->get_attribute_input(input_name);
         input_node.set_output_type(data_type, attribute_info);
+        input_node.input().set_accepts(data_type);
 
         refresh_all_sockets();
     }
