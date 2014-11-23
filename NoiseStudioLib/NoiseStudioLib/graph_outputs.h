@@ -46,6 +46,23 @@ namespace noises
             return reinterpret_cast<ValueType*>(&buffer.get_memory_block(0)[0]);
         }
 
+        template<typename ValueType>
+        std::vector<ValueType> get_attribute_all_vector(const std::string& name) const
+        {
+            DataBuffer& buffer = get_raw_buffer(name);
+            const ConnectionDataType& type = buffer.get_attribute_type(0);
+            assert(type.is<ValueType>());
+
+            std::vector<ValueType> out(buffer.attribute_info().length() * type.dimensions());
+            ValueType* out_start = out.data();
+            const ValueType* buffer_start = reinterpret_cast<const ValueType*>(buffer.get_memory_block(0).data());
+
+            std::copy(buffer_start, buffer_start + out.size(), out_start);
+
+            return out;
+
+        }
+
         AttributeInfo attribute_info(const std::string& name) const;
 
         DataBuffer& get_raw_buffer(const std::string& name) const;

@@ -27,3 +27,34 @@ TEST_CASE("Can make a blank grid.", "")
 
     REQUIRE(attribute_length == 100);
 }
+
+TEST_CASE("Can make pixel mapping", "")
+{
+    Graph graph;
+
+    BlankGrid& grid = graph.add_node<BlankGrid>();
+    grid.set_size(10, 10);
+
+    PixelMapping& mapping = graph.add_node<PixelMapping>();
+
+    GraphNode& output_node = graph.add_attribute_output("Output");
+
+    graph.connect(grid.output("Grid"), mapping.input("Grid"));
+    graph.connect(mapping.output("Mapped"), output_node.input("Input"));
+
+    GraphOutputs outputs = graph.execute();
+
+    std::vector<int> output_data = outputs.get_attribute_all_vector<int>("Output");
+
+    for(int y = 0; y < 10; y++)
+    {
+        for(int x = 0; x < 10; x++)
+        {
+            //x2 because it's xyxyxyxyxyxyxyxy
+            int index = (y * 10 + x) * 2;
+
+            REQUIRE(output_data.at(index) == x);
+            REQUIRE(output_data.at(index + 1) == y);
+        }
+    }
+}

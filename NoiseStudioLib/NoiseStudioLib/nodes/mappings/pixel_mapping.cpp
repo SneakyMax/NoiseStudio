@@ -44,7 +44,7 @@ namespace mappings {
     {
         const ptr_array<int, 2> dimensions = output.get_scratch<int, 2>(0);
         std::div_t row_column = std::div(index, dimensions[0]);
-        std::array<int, 2> row_column_array { row_column.quot, row_column.rem };
+        std::array<int, 2> row_column_array { row_column.rem, row_column.quot };
         output.set_attribute<int, 2>(*output_, index, row_column_array);
     }
 

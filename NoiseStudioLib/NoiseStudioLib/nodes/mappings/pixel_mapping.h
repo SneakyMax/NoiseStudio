@@ -10,7 +10,7 @@ namespace nodes {
 namespace mappings {
 
     //Maps a grid 1:1, that is, the upper left is 0, 0 and the bottom right is width,height
-    class PixelMapping : GraphNode
+    class PixelMapping : public GraphNode
     {
     public:
         PixelMapping();
