@@ -13,7 +13,7 @@ TEST_CASE("Testing DataBuffer", "")
     {
         DataBuffer d(4);
 
-        REQUIRE(d.attribute_size() == 4);
+        REQUIRE(d.attribute_info().length() == 4);
     }
 
     SECTION("Can add int 1-dimensional data type to data buffer")
@@ -21,7 +21,7 @@ TEST_CASE("Testing DataBuffer", "")
         DataBuffer d(4);
         d.add_attribute(ConnectionDataType::value<int, 1>());
 
-        REQUIRE(d.attribute_size() == 4);
+        REQUIRE(d.attribute_info().length() == 4);
         REQUIRE(d.num_attributes() == 1);
         REQUIRE(d.allocated_attribute_memory() == sizeof(int) * 4);
 

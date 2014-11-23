@@ -120,11 +120,20 @@ namespace noises
         return !(l == r);
     }
 
-    template<> class ConnectionDataType::ConnectionDataTypeName<int> { public: static const char* const name; };
-    template<> class ConnectionDataType::ConnectionDataTypeName<float> { public: static const char* const name; };
-    template<> class ConnectionDataType::ConnectionDataTypeName<double> { public: static const char* const name; };
-    template<> class ConnectionDataType::ConnectionDataTypeName<unsigned char> { public: static const char* const name; };
-    template<> class ConnectionDataType::ConnectionDataTypeName<std::string> { public: static const char* const name; };
+    #define MAKE_TYPE_NAME(type) template<> class ConnectionDataType::ConnectionDataTypeName<type> { public: static const char* const name; }
+
+    MAKE_TYPE_NAME(int);
+    MAKE_TYPE_NAME(unsigned int);
+    MAKE_TYPE_NAME(float);
+    MAKE_TYPE_NAME(double);
+    MAKE_TYPE_NAME(long double);
+    MAKE_TYPE_NAME(char);
+    MAKE_TYPE_NAME(unsigned char);
+    MAKE_TYPE_NAME(std::string);
+    MAKE_TYPE_NAME(long);
+    MAKE_TYPE_NAME(unsigned long);
+
+
 }
 
 #endif // CONNECTION_TYPE_H

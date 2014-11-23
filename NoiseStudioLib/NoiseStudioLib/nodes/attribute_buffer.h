@@ -25,7 +25,7 @@ namespace nodes
         OutputSocket& output();
         const OutputSocket& output() const;
 
-        void set_output_type(const ConnectionDataType& data_type, AttributeInfo attribute_info);
+        void set_output_type(const ConnectionDataType& data_type);
 
     private:
         InputSocket* input_;

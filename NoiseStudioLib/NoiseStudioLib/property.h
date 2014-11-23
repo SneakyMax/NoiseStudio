@@ -40,6 +40,12 @@ namespace noises
             return reinterpret_cast<T*>(get_buffer(buffers::value));
         }
 
+        template<typename T>
+        void set_value(const ptr_array<T, 1> value)
+        {
+            set_value<T, 1>(value);
+        }
+
         template<typename T, unsigned int Dimensions>
         void set_value(const ptr_array<T, Dimensions> value)
         {

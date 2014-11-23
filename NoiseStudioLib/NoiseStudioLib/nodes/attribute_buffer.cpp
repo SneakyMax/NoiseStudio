@@ -56,11 +56,9 @@ namespace nodes {
         return *output_;
     }
 
-    void AttributeBuffer::set_output_type(const ConnectionDataType &data_type, AttributeInfo attribute_info)
+    void AttributeBuffer::set_output_type(const ConnectionDataType &data_type)
     {
         output_->set_data_type(data_type);
-
         has_manual_output_type_ = true;
-        override_attribute_info(attribute_info);
     }
 } }

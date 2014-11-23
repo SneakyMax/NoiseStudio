@@ -24,7 +24,9 @@ SOURCES += \
     connection_data_type.cpp \
     graph_validator.cpp \
     validation_results.cpp \
-    nodes/math.cpp
+    nodes/math.cpp \
+    nodes/blank_grid.cpp \
+    nodes/mappings/pixel_mapping.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
@@ -47,7 +49,6 @@ HEADERS += \
     ptr_array.h \
     property_collection.h \
     utils.h \
-    attrbute_info.h \
     graph_executor.h \
     nodes/constant_value.h \
     ptr_array_common.hpart \
@@ -56,7 +57,10 @@ HEADERS += \
     graph_outputs.h \
     graph_validator.h \
     validation_results.h \
-    nodes/math.h
+    nodes/math.h \
+    nodes/blank_grid.h \
+    attribute_info.h \
+    nodes/mappings/pixel_mapping.h
 
 header_files.path = $$OUT_PWD/lib
 header_files.files = $$HEADERS
@@ -65,3 +69,12 @@ INSTALLS += header_files
 INCLUDEPATH += ../boost
 
 QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CXXFLAGS += -fstrict-aliasing
+
+win32: LIBS += -L$$PWD/../boost/build/boost/bin.v2/libs/regex/build/gcc-mingw-4.8.2/debug/link-static/ -lboost_regex-mgw48-d-1_57
+
+INCLUDEPATH += $$PWD/../boost/build/boost/bin.v2/libs/regex/build/gcc-mingw-4.8.2/debug/link-static
+DEPENDPATH += $$PWD/../boost/build/boost/bin.v2/libs/regex/build/gcc-mingw-4.8.2/debug/link-static
+
+win32:!win32-g++: PRE_TARGETDEPS += $$PWD/../boost/build/boost/bin.v2/libs/regex/build/gcc-mingw-4.8.2/debug/link-static/boost_regex-mgw48-d-1_57.lib
+else:win32-g++: PRE_TARGETDEPS += $$PWD/../boost/build/boost/bin.v2/libs/regex/build/gcc-mingw-4.8.2/debug/link-static/libboost_regex-mgw48-d-1_57.a

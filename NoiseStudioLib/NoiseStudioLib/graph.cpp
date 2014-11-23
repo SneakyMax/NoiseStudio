@@ -276,7 +276,8 @@ namespace noises
         if(existing_it != manual_input_buffers_.end())
             manual_input_buffers_.erase(existing_it);
         
-        std::unique_ptr<DataBuffer> new_buffer(new DataBuffer(0));
+        AttributeInfo attr_info(0, "");
+        std::unique_ptr<DataBuffer> new_buffer(new DataBuffer(attr_info));
 
         new_buffer->add_uniform(data_type);
         new_buffer->set_uniform_raw(0, data_type.size_full(), data_ptr);
@@ -302,17 +303,16 @@ namespace noises
         if(existing_it != manual_input_buffers_.end())
             manual_input_buffers_.erase(existing_it);
 
-        std::unique_ptr<DataBuffer> new_buffer(new DataBuffer(attribute_length));
+        AttributeInfo attr_info(attribute_length, "");
+        std::unique_ptr<DataBuffer> new_buffer(new DataBuffer(attr_info));
 
         new_buffer->add_attribute(data_type);
         new_buffer->set_attribute_all_raw(0, data_ptr, attribute_length * data_type.size_full());
 
         manual_input_buffers_.insert(std::pair<std::string, std::unique_ptr<DataBuffer>>(input_name, std::move(new_buffer)));
 
-        AttributeInfo attribute_info(attribute_length, "unknown"); //todo
-
         nodes::AttributeBuffer& input_node = *this->get_attribute_input(input_name);
-        input_node.set_output_type(data_type, attribute_info);
+        input_node.set_output_type(data_type);
         input_node.input().set_accepts(data_type);
 
         refresh_all_sockets();

@@ -6,6 +6,7 @@
 
 #include "ptr_array.h"
 #include "connection_data_type.h"
+#include "attribute_info.h"
 
 namespace noises
 {
@@ -16,11 +17,11 @@ namespace noises
     public:
         typedef std::vector<void*>::size_type size_type;
 
-        CompositeDataBuffer(size_type attribute_size);
+        CompositeDataBuffer();
         CompositeDataBuffer(const CompositeDataBuffer&) = delete;
         CompositeDataBuffer& operator=(const CompositeDataBuffer&) = delete;
 
-        void add_attribute(const ConnectionDataType& data_type, const std::vector<unsigned char>& buffer);
+        void add_attribute(const ConnectionDataType& data_type, const std::vector<unsigned char>& buffer, AttributeInfo buffer_info);
 
         void add_uniform(const ConnectionDataType& data_type, const unsigned char* ptr);
 
@@ -41,7 +42,7 @@ namespace noises
 
         const unsigned char* get_uniform_raw(const InputSocket& socket, const ConnectionDataType& should_support) const;
 
-        size_type attribute_size() const;
+        AttributeInfo attribute_info() const;
 
         size_type num_attributes() const;
 
@@ -63,7 +64,7 @@ namespace noises
         std::vector<std::reference_wrapper<const std::vector<unsigned char>>> attribute_refs_;
         std::vector<unsigned char> uniform_memory_block_;
 
-        size_type attribute_size_;
+        AttributeInfo attribute_info_;
     };
 }
 

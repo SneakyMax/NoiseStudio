@@ -7,10 +7,22 @@
 
 namespace noises
 {
-    CompositeDataBuffer::CompositeDataBuffer(size_type attribute_size) : attribute_size_(attribute_size) { }
+    CompositeDataBuffer::CompositeDataBuffer() : attribute_info_(0, "") { }
 
-    void CompositeDataBuffer::add_attribute(const ConnectionDataType& data_type, const std::vector<unsigned char>& buffer)
+    void CompositeDataBuffer::add_attribute(const ConnectionDataType& data_type, const std::vector<unsigned char>& buffer, AttributeInfo buffer_info)
     {
+        if(attribute_info_.length() == 0)
+        {
+            attribute_info_ = buffer_info;
+        }
+        else
+        {
+            if(buffer_info.length() != attribute_info_.length())
+            {
+                throw std::invalid_argument("Attributes are not same length.");
+            }
+        }
+
         attribute_data_types_.push_back(std::ref(data_type));
         attribute_refs_.push_back(std::ref(buffer));
     }
@@ -68,9 +80,9 @@ namespace noises
         return real_index;
     }
 
-    CompositeDataBuffer::size_type CompositeDataBuffer::attribute_size() const
+    AttributeInfo CompositeDataBuffer::attribute_info() const
     {
-        return attribute_size_;
+        return attribute_info_;
     }
 
     CompositeDataBuffer::size_type CompositeDataBuffer::num_attributes() const

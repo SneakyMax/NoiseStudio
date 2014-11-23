@@ -7,6 +7,7 @@
 
 #include "output_socket.h"
 #include "ptr_array.h"
+#include "attribute_info.h"
 
 namespace noises
 {
@@ -19,8 +20,8 @@ namespace noises
     public:
         typedef std::vector<void*>::size_type size_type;
 
-        /** Creates a new data buffer, specifying attribute_size for the size of attribute types (e.g. position as one number) **/
-        DataBuffer(size_type attribute_size);
+        /** Creates a new data buffer, specifying attribute_info for the size of attribute types (e.g. position as one number) **/
+        DataBuffer(AttributeInfo attribute_info);
         DataBuffer(const DataBuffer&) = delete;
         DataBuffer& operator=(const DataBuffer&) = delete;
 
@@ -39,6 +40,7 @@ namespace noises
         template<typename T, unsigned int Dimensions>
         const ptr_array<T, Dimensions> get_attribute(const OutputSocket& socket, size_type index) const
         {
+            static_assert(std::is_literal_type<T>(), "T must be a literal type to be used in a DataBuffer.");
             return get_attribute_raw(socket, ConnectionDataType::value<T, Dimensions>(), index);
         }
 
@@ -46,6 +48,7 @@ namespace noises
         template<typename T, unsigned int Dimensions>
         void set_attribute(const OutputSocket& socket, size_type index, const ptr_array<T, Dimensions> ptr)
         {
+            static_assert(std::is_literal_type<T>(), "T must be a literal type to be used in a DataBuffer.");
             set_attribute_raw(socket, ConnectionDataType::value<T, Dimensions>(), index, ptr.raw());
         }
 
@@ -53,6 +56,7 @@ namespace noises
         template<typename T, unsigned int Dimensions>
         const ptr_array<T, Dimensions> get_uniform(const OutputSocket& socket) const
         {
+            static_assert(std::is_literal_type<T>(), "T must be a literal type to be used in a DataBuffer.");
             return get_uniform_raw(socket, ConnectionDataType::value<T, Dimensions>());
         }
 
@@ -60,12 +64,13 @@ namespace noises
         template<typename T, unsigned int Dimensions>
         void set_uniform(const OutputSocket& socket, const ptr_array<T, Dimensions> ptr)
         {
+            static_assert(std::is_literal_type<T>(), "T must be a literal type to be used in a DataBuffer.");
             set_uniform_raw(socket, ConnectionDataType::value<T, Dimensions>(), ptr.raw());
         }
 
 
         /** Gets the size of the attributes (the value passed into the constructor) **/
-        size_type attribute_size() const;
+        AttributeInfo attribute_info() const;
 
         /** Gets the number of attributes added to the data buffer. **/
         size_type num_attributes() const;
@@ -122,6 +127,26 @@ namespace noises
         /** Sets a uniform as a raw byte array, with *no* type checking. Only use this if you're sure you're messing with the right data type (dangerous). */
         void set_uniform_raw(unsigned int socket_index, std::size_t value_size, const unsigned char* value);
 
+        void resize_attribute(AttributeInfo info);
+
+        template<typename T, unsigned int Dimensions>
+        void set_scratch(unsigned int index, const ptr_array<T, Dimensions> value)
+        {
+            static_assert(std::is_literal_type<T>(), "T must be a literal type to be used in a DataBuffer.");
+            set_scratch_raw(index, ConnectionDataType::value<T, Dimensions>(), value.raw());
+        }
+
+        template<typename T, unsigned int Dimensions>
+        const ptr_array<T, Dimensions> get_scratch(unsigned int index) const
+        {
+            static_assert(std::is_literal_type<T>(), "T must be a literal type to be used in a DataBuffer.");
+            return reinterpret_cast<const T*>(get_scratch_raw(index, ConnectionDataType::value<T, Dimensions>()));
+        }
+
+        void set_scratch_raw(unsigned int index, const ConnectionDataType& data_type, const unsigned char* value);
+
+        const unsigned char* get_scratch_raw(unsigned int index, const ConnectionDataType& data_type) const;
+
     private:
         size_type get_uniform_index(int index) const;
 
@@ -131,7 +156,9 @@ namespace noises
         std::vector<std::reference_wrapper<const ConnectionDataType>> uniform_data_types_;
         std::vector<unsigned char> uniform_memory_block_;
 
-        size_type attribute_size_;
+        std::vector<std::vector<unsigned char>> scratch_blocks_;
+
+        AttributeInfo attribute_info_;
     };
 }
 

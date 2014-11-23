@@ -30,8 +30,8 @@ namespace noises
         return out;
     }
 
-    DataBuffer::size_type GraphOutputs::attribute_length(const std::string& name) const
+    AttributeInfo GraphOutputs::attribute_info(const std::string& name) const
     {
-        return get_raw_buffer(name).attribute_size();
+        return get_raw_buffer(name).attribute_info();
     }
 }

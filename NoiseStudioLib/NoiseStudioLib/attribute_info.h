@@ -1,5 +1,5 @@
-#ifndef ATTRBUTE_INFO_H
-#define ATTRBUTE_INFO_H
+#ifndef ATTRIBUTE_INFO_H
+#define ATTRIBUTE_INFO_H
 
 #include <cstddef>
 #include <string>
@@ -9,6 +9,10 @@ namespace noises
     struct AttributeInfo
     {
     public:
+        AttributeInfo() : AttributeInfo(0, "") { }
+
+        AttributeInfo(std::size_t length) : AttributeInfo(length, "") { }
+
         AttributeInfo(std::size_t length, const std::string& tag) :
             length_(length), tag_(tag) { }
 
@@ -32,4 +36,4 @@ namespace noises
 
 
 
-#endif // ATTRBUTE_INFO_H
+#endif // ATTRIBUTE_INFO_H

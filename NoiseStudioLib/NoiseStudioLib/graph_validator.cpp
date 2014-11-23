@@ -73,7 +73,7 @@ namespace noises
             for(auto& socket_ref : node.get().inputs().all_sockets())
             {
                 const InputSocket& socket = socket_ref.get();
-                if(socket.connection() || socket.optional())
+                if(socket.connection())
                 {
                     has_incoming_edge = true;
                     break;

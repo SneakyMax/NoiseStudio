@@ -29,9 +29,9 @@ namespace noises
         void get_topological_order();
         GraphOutputs execute_internal();
         void execute_node(int node_id);
+        void get_attribute_length(const CompositeDataBuffer& input);
         std::vector<int> get_node_dependencies(const GraphNode& node);
-        DataBuffer& get_buffer(int node_id, std::size_t buffer_attribute_length);
-        std::size_t get_attribute_length(const GraphNode& node);
+        DataBuffer& get_buffer(int node_id, AttributeInfo buffer_attribute_info = AttributeInfo());
         std::unordered_map<int, std::reference_wrapper<DataBuffer>> get_node_dependency_buffers(const GraphNode& node);
         std::unique_ptr<DataBuffer> extract_buffer(const DataBuffer& buffer);
         void add_attribute_dependencies(CompositeDataBuffer& input_buffer, const GraphNode& node, std::unordered_map<int, std::reference_wrapper<DataBuffer>>& buffers, std::vector<unsigned char>& empty_buffer);

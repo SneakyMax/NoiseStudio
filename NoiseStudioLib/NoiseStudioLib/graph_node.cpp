@@ -6,7 +6,7 @@
 
 namespace noises
 {
-    GraphNode::GraphNode() : name_(""), attribute_override_(AttributeInfo::inherit()), inputs_(this), outputs_(this), in_recalculate_sockets_(false), parent_(nullptr)
+    GraphNode::GraphNode() : name_(""), inputs_(this), outputs_(this), in_recalculate_sockets_(false), parent_(nullptr)
     {
         inputs_.listen_socket_changed([this](const InputSocket&) { recalculate_sockets_internal(); });
         outputs_.listen_socket_changed([this](const OutputSocket&) { recalculate_sockets_internal(); });
@@ -91,12 +91,6 @@ namespace noises
         return properties_.properties();
     }
 
-    void GraphNode::override_attribute_info(AttributeInfo info)
-    {
-        attribute_override_ = info;
-        recalculate_sockets();
-    }
-
     void GraphNode::recalculate_sockets_internal()
     {
         // Prevents infinite recursion
@@ -137,13 +131,6 @@ namespace noises
     const OutputSocket& GraphNode::output(const std::string &name) const
     {
         return outputs_[name];
-    }
-
-    boost::optional<AttributeInfo> GraphNode::get_attribute_override() const
-    {
-        if(attribute_override_.length() != 0)
-            return attribute_override_;
-        return boost::none;
     }
 
     void GraphNode::request_recalculate_sockets()

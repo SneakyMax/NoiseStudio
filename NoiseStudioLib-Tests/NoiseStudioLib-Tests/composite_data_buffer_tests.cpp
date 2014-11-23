@@ -9,7 +9,7 @@ using namespace noises;
 
 TEST_CASE("Can create composite data buffer", "")
 {
-    CompositeDataBuffer c(4);
+    CompositeDataBuffer c;
 
     REQUIRE(c.num_uniforms() == 0);
     REQUIRE(c.num_attributes() == 0);
@@ -18,7 +18,7 @@ TEST_CASE("Can create composite data buffer", "")
 
 TEST_CASE("Composite data buffer add/get uniforms")
 {
-    CompositeDataBuffer c(4);
+    CompositeDataBuffer c;
 
     DataBuffer d(4);
 
@@ -53,7 +53,7 @@ TEST_CASE("Composite data buffer add/get uniforms")
 TEST_CASE("Composite data buffer add/get attribute", "")
 {
     int n = 4;
-    CompositeDataBuffer c(n);
+    CompositeDataBuffer c;
     DataBuffer d(n);
 
     OutputSocket output("int", ConnectionDataType::value<int, 3>(), SocketType::attribute);
@@ -65,13 +65,13 @@ TEST_CASE("Composite data buffer add/get attribute", "")
         d.set_attribute<int, 3>(output, i, data);
     }
 
-    c.add_attribute(ConnectionDataType::value<int, 3>(), d.get_memory_block(0));
+    c.add_attribute(ConnectionDataType::value<int, 3>(), d.get_memory_block(0), n);
 
     SECTION("Can add attribute")
     {
         REQUIRE(c.num_attributes() == 1);
         REQUIRE(c.num_uniforms() == 0);
-        REQUIRE(c.attribute_size() == n);
+        REQUIRE(c.attribute_info().length() == n);
 
         auto& data_type = ConnectionDataType::value<int, 3>();
         REQUIRE(c.get_attribute_type(0) == data_type);
@@ -116,7 +116,7 @@ TEST_CASE("Multiple attributes flip-flop")
 
     int n = 4;
     DataBuffer d(n);
-    CompositeDataBuffer c(n);
+    CompositeDataBuffer c;
 
     d.add(outputs);
 
@@ -129,8 +129,8 @@ TEST_CASE("Multiple attributes flip-flop")
         d.set_attribute<float, 2>(outputs["b"], i, float_data);
     }
 
-    c.add_attribute(ConnectionDataType::value<float, 2>(), d.get_memory_block(1));
-    c.add_attribute(ConnectionDataType::value<int, 2>(), d.get_memory_block(0));
+    c.add_attribute(ConnectionDataType::value<float, 2>(), d.get_memory_block(1), n);
+    c.add_attribute(ConnectionDataType::value<int, 2>(), d.get_memory_block(0), n);
 
     for(int i = 0; i < n; i++)
     {

@@ -52,7 +52,7 @@ namespace noises
         for(const GraphNode& output : graph_.output_nodes())
         {
             // Attribute length is irrelevant here
-            outputs.add(output.name(), extract_buffer(get_buffer(output.id(), 0)));
+            outputs.add(output.name(), extract_buffer(get_buffer(output.id())));
         }
 
         return outputs;
@@ -62,18 +62,20 @@ namespace noises
     {
         const GraphNode& node = *graph_.get_node_by_id(node_id);
         auto buffers = get_node_dependency_buffers(node);
-        std::size_t attribute_length = get_attribute_length(node);
 
-        DataBuffer& output_buffer = get_buffer(node.id(), attribute_length);
-        CompositeDataBuffer input_buffer(attribute_length);
+        CompositeDataBuffer input_buffer;
         std::vector<unsigned char> empty_buffer;
 
         add_attribute_dependencies(input_buffer, node, buffers, empty_buffer);
         add_uniform_dependencies(input_buffer, node, buffers);
 
+        DataBuffer& output_buffer = get_buffer(node.id(), input_buffer.attribute_info());
+
         output_buffer.add(node.outputs());
 
         node.execute_uniforms(input_buffer, output_buffer);
+
+        DataBuffer::size_type attribute_length = output_buffer.attribute_info().length();
 
         for(DataBuffer::size_type i = 0; i < attribute_length; i++)
         {
@@ -95,14 +97,14 @@ namespace noises
                 int dependency_id = dependency_node->id();
 
                 DataBuffer& dependency_buffer = buffers.at(dependency_id);
-                input_buffer.add_attribute(connection.data_type(), dependency_buffer.get_memory_block(output_socket.index()));
+                input_buffer.add_attribute(connection.data_type(), dependency_buffer.get_memory_block(output_socket.index()), dependency_buffer.attribute_info());
                 continue;
             }
 
             // If it's graph internal node and doesn't have an input connection, assume it's an input to the graph manually
             if(!(node.is_graph_internal_node() && attribute_socket.optional()))
             {
-                input_buffer.add_attribute(ConnectionDataType::undefined(), empty_buffer);
+                input_buffer.add_attribute(ConnectionDataType::undefined(), empty_buffer, AttributeInfo());
                 continue;
             }
 
@@ -110,11 +112,11 @@ namespace noises
             if(graph_input)
             {
                 const DataBuffer& input_attribute_buffer = graph_input->get();
-                input_buffer.add_attribute(input_attribute_buffer.get_attribute_type(0), input_attribute_buffer.get_memory_block(0));
+                input_buffer.add_attribute(input_attribute_buffer.get_attribute_type(0), input_attribute_buffer.get_memory_block(0), input_attribute_buffer.attribute_info());
             }
             else
             {
-                input_buffer.add_attribute(ConnectionDataType::undefined(), empty_buffer);
+                input_buffer.add_attribute(ConnectionDataType::undefined(), empty_buffer, AttributeInfo());
             }
         }
 
@@ -167,8 +169,7 @@ namespace noises
         auto dependencies = get_node_dependencies(node);
         for(int dependency_id : dependencies)
         {
-            const GraphNode& dependency_node = *graph_.get_node_by_id(dependency_id);
-            DataBuffer& buffer = get_buffer(dependency_id, get_attribute_length(dependency_node));
+            DataBuffer& buffer = get_buffer(dependency_id);
             out.emplace(std::make_pair(dependency_id, std::ref(buffer)));
         }
 
@@ -193,7 +194,7 @@ namespace noises
         return out;
     }
 
-    DataBuffer& GraphExecutor::get_buffer(int node_id, std::size_t buffer_attribute_length)
+    DataBuffer& GraphExecutor::get_buffer(int node_id, AttributeInfo buffer_attribute_info)
     {
         // Get the stack position in topological_order_
         // Start at -1 because first iteration (for a size of 1) increments it to 0
@@ -244,7 +245,7 @@ namespace noises
         if(it_q == buffer_level.end())
         {
             // We need to allocate a new buffer
-            std::unique_ptr<DataBuffer> buffer(new DataBuffer(buffer_attribute_length));
+            std::unique_ptr<DataBuffer> buffer(new DataBuffer(buffer_attribute_info));
             DataBuffer& buffer_ref = *buffer;
 
             auto pair = std::make_pair(node_id, std::move(buffer));
@@ -279,29 +280,6 @@ namespace noises
             throw std::logic_error("DataBuffer wasn't in buffer stack??");
 
         return out;
-    }
-
-    std::size_t GraphExecutor::get_attribute_length(const GraphNode &node)
-    {
-        auto override = node.get_attribute_override();
-        if(override)
-        {
-            return override->length();
-        }
-
-        for(const InputSocket& socket : node.inputs().attribute_sockets())
-        {
-            auto possible_connection = socket.connection();
-            if(!possible_connection)
-                continue;
-
-            const Connection& connection = *possible_connection;
-            const GraphNode* output_node = connection.output().parent();
-            return get_attribute_length(*output_node);
-        }
-
-        // Undefined attribute length, assume no attributes
-        return 0;
     }
 
     ValidationResults GraphExecutor::validate_graph() const

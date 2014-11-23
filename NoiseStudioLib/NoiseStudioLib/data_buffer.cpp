@@ -2,10 +2,11 @@
 
 #include <cassert>
 #include "socket_collection.h"
+#include "attribute_info.h"
 
 namespace noises
 {
-    DataBuffer::DataBuffer(size_type size) : attribute_size_(size) { }
+    DataBuffer::DataBuffer(AttributeInfo attribute_info) : attribute_info_(attribute_info) { }
 
     void DataBuffer::add(const SocketCollection<OutputSocket> &sockets)
     {
@@ -24,7 +25,7 @@ namespace noises
     {
         attribute_data_types_.push_back(std::ref(data_type));
         // reserve sizeof(T) * Dimensions * size_
-        attribute_memory_blocks_.push_back(std::vector<unsigned char>(data_type.size_full() * attribute_size_));
+        attribute_memory_blocks_.push_back(std::vector<unsigned char>(data_type.size_full() * attribute_info_.length()));
     }
 
     void DataBuffer::add_uniform(const ConnectionDataType& data_type)
@@ -110,9 +111,9 @@ namespace noises
         return real_index;
     }
 
-    DataBuffer::size_type DataBuffer::attribute_size() const
+    AttributeInfo DataBuffer::attribute_info() const
     {
-        return attribute_size_;
+        return attribute_info_;
     }
 
     DataBuffer::size_type DataBuffer::num_attributes() const
@@ -158,5 +159,40 @@ namespace noises
     const unsigned char* DataBuffer::get_uniform_block(int index) const
     {
         return &(uniform_memory_block_[get_uniform_index(index)]);
+    }
+
+    void DataBuffer::resize_attribute(AttributeInfo info)
+    {
+        attribute_info_ = info;
+
+        int i = 0;
+        for(std::vector<unsigned char>& buffer : attribute_memory_blocks_)
+        {
+            buffer.resize(get_attribute_type(i).size_full() * info.length());
+            i++;
+        }
+    }
+
+    void DataBuffer::set_scratch_raw(unsigned int index, const ConnectionDataType &data_type, const unsigned char *value)
+    {
+        if(index >= scratch_blocks_.size())
+            scratch_blocks_.resize(index + 1);
+
+        std::vector<unsigned char>& buffer = scratch_blocks_.at(index);
+
+        buffer.resize(data_type.size_full());
+        std::copy(value, value + data_type.size_full(), buffer.data());
+    }
+
+    const unsigned char* DataBuffer::get_scratch_raw(unsigned int index, const ConnectionDataType &data_type) const
+    {
+        if(index >= scratch_blocks_.size())
+            throw std::out_of_range("index is out of range");
+
+        const std::vector<unsigned char>& buffer = scratch_blocks_.at(index);
+
+        assert(buffer.size() == data_type.size_full());
+
+        return buffer.data();
     }
 }

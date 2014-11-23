@@ -9,7 +9,7 @@
 #include "input_socket.h"
 #include "output_socket.h"
 #include "property_collection.h"
-#include "attrbute_info.h"
+#include "attribute_info.h"
 
 namespace noises
 {
@@ -58,8 +58,6 @@ namespace noises
         int id() const;
         void set_id(int id);
 
-        boost::optional<AttributeInfo> get_attribute_override() const;
-
         Property& property(const std::string& name);
         const Property& property(const std::string& name) const;
 
@@ -88,10 +86,6 @@ namespace noises
 
         void remove_property(const Property& property);
 
-        /** Overrides the attribute length for a node. This will mean that execute_attributes will be called new_length times instead
-         * of the length of the attributes passed into the node. Use this to, for example, change the size of an image.  **/
-        void override_attribute_info(AttributeInfo info);
-
         /** Called when a connection is changed for a socket, a property is changed or added or removed, or the node is added to the graph.
          *  Use this to calculate socket output types (for example when they're dependent on the input type). **/
         virtual void recalculate_sockets();
@@ -102,7 +96,6 @@ namespace noises
         PropertyCollection properties_;
 
         std::string name_;
-        AttributeInfo attribute_override_;
 
         SocketCollection<InputSocket> inputs_;
         SocketCollection<OutputSocket> outputs_;

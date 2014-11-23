@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include "data_buffer.h"
+#include "attribute_info.h"
 
 namespace noises
 {
@@ -45,7 +46,7 @@ namespace noises
             return reinterpret_cast<ValueType*>(&buffer.get_memory_block(0)[0]);
         }
 
-        DataBuffer::size_type attribute_length(const std::string& name) const;
+        AttributeInfo attribute_info(const std::string& name) const;
 
         DataBuffer& get_raw_buffer(const std::string& name) const;
 
