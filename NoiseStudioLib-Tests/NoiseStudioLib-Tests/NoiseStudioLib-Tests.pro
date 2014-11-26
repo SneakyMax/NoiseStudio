@@ -11,7 +11,8 @@ SOURCES += main.cpp \
     simple_graph_tests.cpp \
     graph_validator_tests.cpp \
     math_node_tests.cpp \
-    blank_grid_mapping_tests.cpp
+    blank_grid_mapping_tests.cpp \
+    perlin_noise_tests.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
@@ -20,6 +21,10 @@ HEADERS += \
     catch.h
 
 QMAKE_CXXFLAGS += -std=c++11
+
+QMAKE_CXXFLAGS_RELEASE -= -O1
+QMAKE_CXXFLAGS_RELEASE -= -O2
+QMAKE_CXXFLAGS_RELEASE *= -O3
 
 INCLUDEPATH += ../../NoiseStudioLib/boost
 

@@ -71,6 +71,10 @@ INCLUDEPATH += ../boost
 QMAKE_CXXFLAGS += -std=c++11
 QMAKE_CXXFLAGS += -fstrict-aliasing
 
+QMAKE_CXXFLAGS_RELEASE -= -O1
+QMAKE_CXXFLAGS_RELEASE -= -O2
+QMAKE_CXXFLAGS_RELEASE *= -O3
+
 win32: LIBS += -L$$PWD/../boost/build/boost/bin.v2/libs/regex/build/gcc-mingw-4.8.2/debug/link-static/ -lboost_regex-mgw48-d-1_57
 
 INCLUDEPATH += $$PWD/../boost/build/boost/bin.v2/libs/regex/build/gcc-mingw-4.8.2/debug/link-static
