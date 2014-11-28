@@ -12,6 +12,7 @@ namespace noises
 {
     class GraphNode;
     class Socket;
+    class InputSocket;
 
     template<typename TSocket>
     class SocketCollection
@@ -51,12 +52,12 @@ namespace noises
 
         void listen_socket_changed(std::function<void(const TSocket&)> handler);
 
-        void change_type(const std::string& name, SocketType target_type);
-
     private:
         void socket_changed(TSocket& socket);
 
-        void try_place_input_either_socket(Socket& socket);
+        void try_place_input_socket(Socket& socket);
+        void try_place_output_socket(Socket& socket);
+        void try_place_input_either_socket(InputSocket& socket);
         void try_move_socket(Socket& socket, std::vector<std::unique_ptr<TSocket>>& from, std::vector<std::unique_ptr<TSocket>>& to);
 
         std::vector<std::unique_ptr<TSocket>> attribute_sockets_;
@@ -215,13 +216,15 @@ namespace noises
     template<typename TSocket>
     std::vector<std::reference_wrapper<TSocket>> SocketCollection<TSocket>::all_sockets()
     {
-        return utils::concat(attribute_sockets(), uniform_sockets());
+        auto either_sockets = utils::to_reference_array(either_sockets_);
+        return utils::concat(attribute_sockets(), uniform_sockets(), either_sockets);
     }
 
     template<typename TSocket>
     const std::vector<std::reference_wrapper<const TSocket>> SocketCollection<TSocket>::all_sockets() const
     {
-        return utils::concat(attribute_sockets(), uniform_sockets());
+        auto either_sockets = utils::to_reference_array_const(either_sockets_);
+        return utils::concat(attribute_sockets(), uniform_sockets(), either_sockets);
     }
 
     template<typename TSocket>
@@ -233,7 +236,8 @@ namespace noises
     template<typename TSocket>
     void SocketCollection<TSocket>::socket_changed(TSocket &socket)
     {
-        try_place_input_either_socket(socket);
+        try_place_input_socket(socket);
+        try_place_output_socket(socket);
 
         for(std::function<void(const TSocket&)> handler : listeners_)
         {
@@ -242,41 +246,81 @@ namespace noises
     }
 
     template<typename TSocket>
-    void SocketCollection<TSocket>::try_place_input_either_socket(Socket& socket)
+    void SocketCollection<TSocket>::try_place_input_socket(Socket& socket)
+    {
+        // Try to place the either socket
+        InputSocket* input_socket = dynamic_cast<InputSocket*>(&socket);
+        if(input_socket == nullptr)
+            return;
+
+        if(socket.type() == SocketType::either)
+        {
+            try_place_input_either_socket(*input_socket);
+            return;
+        }
+
+        // The socket type might have changed
+        if(socket.type() == SocketType::attribute)
+        {
+            try_move_socket(socket, uniform_sockets_, attribute_sockets_);
+        }
+        else
+        {
+            try_move_socket(socket, attribute_sockets_, uniform_sockets_);
+        }
+    }
+
+    template<typename TSocket>
+    void SocketCollection<TSocket>::try_place_input_either_socket(InputSocket& socket)
     {
         if(socket.type() != SocketType::either)
             return;
 
         // Try to place the either socket
         InputSocket* input_socket = dynamic_cast<InputSocket*>(&socket);
-        if(input_socket != nullptr)
+        if(input_socket == nullptr)
+            return;
+
+        auto possible_connection = input_socket->connection();
+        if(possible_connection)
         {
-            auto possible_connection = input_socket->connection();
-            if(possible_connection)
+            const Connection& connection = *possible_connection;
+            if(connection.output().type() == SocketType::attribute)
             {
-                const Connection& connection = *possible_connection;
-                if(connection.output().type() == SocketType::attribute)
-                {
-                    try_move_socket(socket, uniform_sockets_, attribute_sockets_);
-                    try_move_socket(socket, either_sockets_, attribute_sockets_);
-                }
-                else
-                {
-                    try_move_socket(socket, attribute_sockets_, uniform_sockets_);
-                    try_move_socket(socket, either_sockets_, uniform_sockets_);
-                }
+                try_move_socket(socket, uniform_sockets_, attribute_sockets_);
+                try_move_socket(socket, either_sockets_, attribute_sockets_);
             }
             else
             {
-                try_move_socket(socket, attribute_sockets_, either_sockets_);
-                try_move_socket(socket, uniform_sockets_, either_sockets_);
+                try_move_socket(socket, attribute_sockets_, uniform_sockets_);
+                try_move_socket(socket, either_sockets_, uniform_sockets_);
             }
         }
         else
         {
-            throw std::logic_error("Either sockets must be input sockets!");
+            try_move_socket(socket, attribute_sockets_, either_sockets_);
+            try_move_socket(socket, uniform_sockets_, either_sockets_);
         }
     }
+
+    template<typename TSocket>
+    void SocketCollection<TSocket>::try_place_output_socket(Socket& socket)
+    {
+        OutputSocket* output_socket = dynamic_cast<OutputSocket*>(&socket);
+        if(output_socket == nullptr)
+            return;
+
+        // The socket's type might have changed
+        if(output_socket->type() == SocketType::attribute)
+        {
+            try_move_socket(socket, uniform_sockets_, attribute_sockets_);
+        }
+        else if(output_socket->type() == SocketType::uniform)
+        {
+            try_move_socket(socket, attribute_sockets_, uniform_sockets_);
+        }
+    }
+
     template<typename TSocket>
     void SocketCollection<TSocket>::try_move_socket(Socket& socket, std::vector<std::unique_ptr<TSocket>>& from, std::vector<std::unique_ptr<TSocket>>& to)
     {
@@ -289,34 +333,6 @@ namespace noises
         from.erase(it);
         to.push_back(std::move(new_ptr));
         socket.set_index(to.size() - 1);
-    }
-
-    template<typename TSocket>
-    void SocketCollection<TSocket>::change_type(const std::string& name, SocketType target_type)
-    {
-        TSocket& socket = operator[](name);
-
-        if(target_type == SocketType::attribute)
-        {
-            try_move_socket(socket, uniform_sockets_, attribute_sockets_);
-            try_move_socket(socket, either_sockets_, attribute_sockets_);
-        }
-        else if(target_type == SocketType::uniform)
-        {
-            try_move_socket(socket, attribute_sockets_, uniform_sockets_);
-            try_move_socket(socket, either_sockets_, uniform_sockets_);
-        }
-        else if(target_type == SocketType::either)
-        {
-            try_move_socket(socket, uniform_sockets_, either_sockets_);
-            try_move_socket(socket, attribute_sockets_, either_sockets_);
-        }
-        else throw std::logic_error("Unknown socket type");
-
-        socket.set_type(target_type);
-
-        if(target_type == SocketType::either)
-            try_place_input_either_socket(socket);
     }
 }
 

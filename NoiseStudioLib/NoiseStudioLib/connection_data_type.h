@@ -11,7 +11,7 @@ namespace noises
     {
     public:
         template<typename ValueType, unsigned int Dimensions>
-        constexpr static inline const ConnectionDataType& value()
+        constexpr static const ConnectionDataType& value()
         {
             return ConnectionDataValue<ValueType, Dimensions>::value();
         }
@@ -55,6 +55,38 @@ namespace noises
         bool is_same_type(const ConnectionDataType& other) const
         {
             return equals(*dimensionless_, *other.dimensionless_);
+        }
+
+        template<typename ValueType>
+        static const ConnectionDataType& dynamic(int dimensions)
+        {
+            switch(dimensions)
+            {
+                case 0:
+                    return ConnectionDataType::value<ValueType, 0>();
+                case 1:
+                    return ConnectionDataType::value<ValueType, 1>();
+                case 2:
+                    return ConnectionDataType::value<ValueType, 2>();
+                case 3:
+                    return ConnectionDataType::value<ValueType, 3>();
+                case 4:
+                    return ConnectionDataType::value<ValueType, 4>();
+                case 5:
+                    return ConnectionDataType::value<ValueType, 5>();
+                case 6:
+                    return ConnectionDataType::value<ValueType, 6>();
+                case 7:
+                    return ConnectionDataType::value<ValueType, 7>();
+                case 8:
+                    return ConnectionDataType::value<ValueType, 8>();
+                case 9:
+                    return ConnectionDataType::value<ValueType, 9>();
+                case 10:
+                    return ConnectionDataType::value<ValueType, 10>();
+            }
+
+            throw std::invalid_argument("Unsupported number of dimensions. Only supports 1-10 dimensions.");
         }
 
         template<typename ValueType, unsigned int Dimensions>

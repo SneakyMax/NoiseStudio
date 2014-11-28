@@ -6,6 +6,7 @@
 #include <nodes/math.h>
 
 using namespace noises;
+using namespace noises::nodes;
 
 TEST_CASE("Simple graph validates.", "")
 {
@@ -48,6 +49,23 @@ TEST_CASE("Simple cyclic graph does not validate.", "")
     graph.connect(constant_value.output("Value"), math_2.input("B"));
 
     graph.connect(math_2.output("Output"), output_socket);
+
+    GraphValidator validator(graph);
+
+    ValidationResults validation = validator.validate();
+    bool is_valid = validation;
+
+    REQUIRE_FALSE(is_valid);
+}
+
+TEST_CASE("Mismatched socket types do not validate", "")
+{
+    Graph graph;
+
+    ConstantValue& constant_value = graph.add_node<ConstantValue>();
+    GraphNode& output_node = graph.add_attribute_output("Output");
+
+    graph.connect(constant_value, output_node);
 
     GraphValidator validator(graph);
 

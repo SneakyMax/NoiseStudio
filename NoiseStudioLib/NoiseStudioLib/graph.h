@@ -49,6 +49,12 @@ namespace noises
         /** Connects the output sockets of one graph node to the input sockets of another graph node. **/
         void connect(OutputSocket& output, InputSocket& input);
 
+        /** Connects the output socket of one graph node to the input socket of another graph node. **/
+        void connect(GraphNode& output, std::string output_name, GraphNode& input, std::string input_name);
+
+        /** Connects the output of a node to the input of another node. This overload can only be used if the output has one output socket and the input has one input socket. */
+        void connect(GraphNode& output, GraphNode& input);
+
         /** Disconnects the connection for an input socket. **/
         void disconnect(InputSocket& input);
 
@@ -115,7 +121,10 @@ namespace noises
 
         void refresh_all_sockets();
 
+        void refresh_after(GraphNode& node);
+
     private:
+        void refresh_after_inner(GraphNode& node, std::size_t recursion_depth);
         void remove_connection(const Connection& connection);
 
         template<typename TBuffer>
@@ -128,6 +137,7 @@ namespace noises
         }
 
         int id_counter_;
+        bool in_refresh_after_;
 
         std::vector<std::unique_ptr<GraphNode>> nodes_;
         std::vector<std::unique_ptr<Connection>> connections_;

@@ -29,10 +29,16 @@ namespace noises
 
     void CompositeDataBuffer::add_uniform(const ConnectionDataType& data_type, const unsigned char* ptr)
     {
+        if(data_type != ConnectionDataType::undefined())
+            assert(ptr != nullptr);
+
         size_type index = uniform_data_types_.size();
 
         uniform_data_types_.push_back(std::ref(data_type));
         uniform_memory_block_.resize(uniform_memory_block_.size() + data_type.size_full());
+
+        if(ptr == nullptr)
+            return;
 
         size_type real_index(get_uniform_index(index));
         std::copy(ptr, ptr + data_type.size_full(), &uniform_memory_block_[real_index]);

@@ -522,13 +522,13 @@ namespace nodes {
         {
             const Connection& connection = *a_connection;
             output("Output").set_data_type(connection.data_type());
-            outputs().change_type("Output", connection.output().type());
+            output("Output").set_type(connection.output().type());
         }
         else if(b_connection)
         {
             const Connection& connection = *b_connection;
             output("Output").set_data_type(connection.data_type());
-            outputs().change_type("Output", connection.output().type());
+            output("Output").set_type(connection.output().type());
         }
         else
         {
@@ -544,7 +544,7 @@ namespace nodes {
             if(a_connection_val.output().type() == SocketType::uniform ||
                b_connection_val.output().type() == SocketType::uniform)
             {
-                outputs().change_type("Output", SocketType::uniform);
+                output("Output").set_type(SocketType::uniform);
             }
 
             // set the output vector size to the larger of the vector sizes. If they're both >1,
@@ -569,7 +569,7 @@ namespace nodes {
         {
             const Connection& connection = *a_connection;
             output("Output").set_data_type(connection.data_type());
-            outputs().change_type("Output", connection.output().type());
+            output("Output").set_type(connection.output().type());
         }
         else
         {

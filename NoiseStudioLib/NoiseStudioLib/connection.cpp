@@ -10,7 +10,8 @@ namespace noises
 
     bool Connection::input_output_type_compatible() const
     {
-        return input_.accepts(output_.data_type()) || input_.accepts(ConnectionDataType::any());
+        return (input_.accepts(output_.data_type()) || input_.accepts(ConnectionDataType::any())) &&
+               (input_.type() == output_.type() || input_.type() == SocketType::either);
     }
 
     const InputSocket& Connection::input() const

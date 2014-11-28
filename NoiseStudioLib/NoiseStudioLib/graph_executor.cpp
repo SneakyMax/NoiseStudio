@@ -73,6 +73,7 @@ namespace noises
 
         output_buffer.add(node.outputs());
 
+
         node.execute_uniforms(input_buffer, output_buffer);
 
         DataBuffer::size_type attribute_length = output_buffer.attribute_info().length();

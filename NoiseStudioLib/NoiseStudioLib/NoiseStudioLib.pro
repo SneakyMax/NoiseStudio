@@ -26,7 +26,8 @@ SOURCES += \
     validation_results.cpp \
     nodes/math.cpp \
     nodes/blank_grid.cpp \
-    nodes/mappings/pixel_mapping.cpp
+    nodes/mappings/pixel_mapping.cpp \
+    nodes/type_conversion.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
@@ -60,7 +61,8 @@ HEADERS += \
     nodes/math.h \
     nodes/blank_grid.h \
     attribute_info.h \
-    nodes/mappings/pixel_mapping.h
+    nodes/mappings/pixel_mapping.h \
+    nodes/type_conversion.h
 
 header_files.path = $$OUT_PWD/lib
 header_files.files = $$HEADERS
@@ -70,6 +72,8 @@ INCLUDEPATH += ../boost
 
 QMAKE_CXXFLAGS += -std=c++11
 QMAKE_CXXFLAGS += -fstrict-aliasing
+
+QMAKE_CXXFLAGS_DEBUG *= -O0
 
 QMAKE_CXXFLAGS_RELEASE -= -O1
 QMAKE_CXXFLAGS_RELEASE -= -O2

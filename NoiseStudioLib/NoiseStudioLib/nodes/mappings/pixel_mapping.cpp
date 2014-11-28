@@ -37,12 +37,12 @@ namespace mappings {
         int height = boost::lexical_cast<int>(static_cast<std::string>(what[2]));
 
         std::array<int, 2> dimensions { width, height };
-        output.set_scratch<int, 2>(0, dimensions);
+        output.set_scratch<std::array<int, 2>>(0, dimensions);
     }
 
     void PixelMapping::execute_attributes(const CompositeDataBuffer&, DataBuffer &output, DataBuffer::size_type index) const
     {
-        const ptr_array<int, 2> dimensions = output.get_scratch<int, 2>(0);
+        std::array<int, 2> dimensions = output.get_scratch<std::array<int, 2>>(0);
         std::div_t row_column = std::div(index, dimensions[0]);
         std::array<int, 2> row_column_array { row_column.rem, row_column.quot };
         output.set_attribute<int, 2>(*output_, index, row_column_array);

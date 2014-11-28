@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <vector>
 #include <memory>
+#include <boost/any.hpp>
 
 #include "output_socket.h"
 #include "ptr_array.h"
@@ -129,23 +130,41 @@ namespace noises
 
         void resize_attribute(AttributeInfo info);
 
-        template<typename T, unsigned int Dimensions>
-        void set_scratch(unsigned int index, const ptr_array<T, Dimensions> value)
+        template<typename T>
+        void set_scratch(unsigned int index, const T& value)
         {
-            static_assert(std::is_literal_type<T>(), "T must be a literal type to be used in a DataBuffer.");
-            set_scratch_raw(index, ConnectionDataType::value<T, Dimensions>(), value.raw());
+            if(static_cast<int>(index) > static_cast<int>(scratch_blocks_.size()) - 1)
+            {
+                boost::any empty = boost::any(0);
+                scratch_blocks_.resize(index + 1, empty);
+            }
+
+            scratch_blocks_[index] = boost::any(value);
         }
 
-        template<typename T, unsigned int Dimensions>
-        const ptr_array<T, Dimensions> get_scratch(unsigned int index) const
+        template<typename T>
+        void set_scratch(unsigned int index, T&& value)
         {
-            static_assert(std::is_literal_type<T>(), "T must be a literal type to be used in a DataBuffer.");
-            return reinterpret_cast<const T*>(get_scratch_raw(index, ConnectionDataType::value<T, Dimensions>()));
+            if(static_cast<int>(index) > static_cast<int>(scratch_blocks_.size()) - 1)
+            {
+                boost::any empty = boost::any(0);
+                scratch_blocks_.resize(index + 1, empty);
+            }
+
+            scratch_blocks_[index] = boost::any(std::forward<T>(value));
         }
 
-        void set_scratch_raw(unsigned int index, const ConnectionDataType& data_type, const unsigned char* value);
+        template<typename T>
+        T get_scratch(unsigned int index)
+        {
+            return boost::any_cast<T>(scratch_blocks_.at(index));
+        }
 
-        const unsigned char* get_scratch_raw(unsigned int index, const ConnectionDataType& data_type) const;
+        template<typename T>
+        T& get_scratch_ref(unsigned int index)
+        {
+            return boost::any_cast<T&>(scratch_blocks_.at(index));
+        }
 
     private:
         size_type get_uniform_index(int index) const;
@@ -156,7 +175,7 @@ namespace noises
         std::vector<std::reference_wrapper<const ConnectionDataType>> uniform_data_types_;
         std::vector<unsigned char> uniform_memory_block_;
 
-        std::vector<std::vector<unsigned char>> scratch_blocks_;
+        std::vector<boost::any> scratch_blocks_;
 
         AttributeInfo attribute_info_;
     };

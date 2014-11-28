@@ -5,6 +5,7 @@ namespace nodes
 {
     ConstantValue::ConstantValue() : value_socket_(nullptr)
     {
+        value_socket_ = &outputs().add(socket_name, ConnectionDataType::undefined(), SocketType::uniform);
     }
 
     void ConstantValue::execute_uniforms(const CompositeDataBuffer&, DataBuffer &output) const

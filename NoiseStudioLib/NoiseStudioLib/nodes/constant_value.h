@@ -29,8 +29,6 @@ namespace nodes
         void set_value(const ptr_array<T, Dimensions> value)
         {
             value.copy_to(buffer_);
-
-            create_value_if_not_exist<T, Dimensions>();
             outputs()[socket_name].set_data_type(ConnectionDataType::value<T, Dimensions>());
         }
 
@@ -44,15 +42,6 @@ namespace nodes
         void execute_uniforms(const CompositeDataBuffer& input, DataBuffer& output) const;
 
     private:
-        template<typename T, unsigned int Dimensions>
-        void create_value_if_not_exist()
-        {
-            if(outputs().get_by_name(socket_name))
-                return;
-
-            value_socket_ = &outputs().add(socket_name, ConnectionDataType::value<T, Dimensions>(), SocketType::uniform);
-        }
-
         std::vector<unsigned char> buffer_;
 
         OutputSocket* value_socket_;

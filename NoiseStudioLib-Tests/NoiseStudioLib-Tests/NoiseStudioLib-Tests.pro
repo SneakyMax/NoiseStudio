@@ -12,7 +12,8 @@ SOURCES += main.cpp \
     graph_validator_tests.cpp \
     math_node_tests.cpp \
     blank_grid_mapping_tests.cpp \
-    perlin_noise_tests.cpp
+    perlin_noise_tests.cpp \
+    type_conversion_node_tests.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
@@ -21,6 +22,8 @@ HEADERS += \
     catch.h
 
 QMAKE_CXXFLAGS += -std=c++11
+
+QMAKE_CXXFLAGS_DEBUG *= -O0
 
 QMAKE_CXXFLAGS_RELEASE -= -O1
 QMAKE_CXXFLAGS_RELEASE -= -O2

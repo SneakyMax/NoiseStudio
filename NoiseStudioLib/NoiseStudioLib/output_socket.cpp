@@ -17,6 +17,7 @@ namespace noises
     void OutputSocket::set_data_type(const ConnectionDataType& data_type)
     {
         data_type_ = data_type;
+        trigger_changed();
     }
 
     const std::vector<std::reference_wrapper<const Connection>>& OutputSocket::connections() const

@@ -84,6 +84,9 @@ namespace noises
     const unsigned char* DataBuffer::get_uniform_raw(unsigned int index) const
     {
         size_type real_index(get_uniform_index(index));
+
+        assert(real_index < uniform_memory_block_.size());
+
         return &(uniform_memory_block_[real_index]);
     }
 
@@ -171,28 +174,5 @@ namespace noises
             buffer.resize(get_attribute_type(i).size_full() * info.length());
             i++;
         }
-    }
-
-    void DataBuffer::set_scratch_raw(unsigned int index, const ConnectionDataType &data_type, const unsigned char *value)
-    {
-        if(index >= scratch_blocks_.size())
-            scratch_blocks_.resize(index + 1);
-
-        std::vector<unsigned char>& buffer = scratch_blocks_.at(index);
-
-        buffer.resize(data_type.size_full());
-        std::copy(value, value + data_type.size_full(), buffer.data());
-    }
-
-    const unsigned char* DataBuffer::get_scratch_raw(unsigned int index, const ConnectionDataType &data_type) const
-    {
-        if(index >= scratch_blocks_.size())
-            throw std::out_of_range("index is out of range");
-
-        const std::vector<unsigned char>& buffer = scratch_blocks_.at(index);
-
-        assert(buffer.size() == data_type.size_full());
-
-        return buffer.data();
     }
 }

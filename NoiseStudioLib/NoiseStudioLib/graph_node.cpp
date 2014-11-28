@@ -6,7 +6,13 @@
 
 namespace noises
 {
-    GraphNode::GraphNode() : name_(""), inputs_(this), outputs_(this), in_recalculate_sockets_(false), parent_(nullptr)
+    GraphNode::GraphNode() :
+        name_(""),
+        inputs_(this),
+        outputs_(this),
+        in_recalculate_sockets_(false),
+        is_graph_internal_node_(false),
+        parent_(nullptr)
     {
         inputs_.listen_socket_changed([this](const InputSocket&) { recalculate_sockets_internal(); });
         outputs_.listen_socket_changed([this](const OutputSocket&) { recalculate_sockets_internal(); });

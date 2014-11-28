@@ -9,16 +9,34 @@
 namespace noises {
 namespace nodes
 {
+    struct PerlinNoiseData;
+
     class PerlinNoise : public GraphNode
     {
     public:
         PerlinNoise();
+
+        std::string node_name() const;
+
+        void execute_uniforms(const CompositeDataBuffer& input, DataBuffer& output) const;
+        void execute_attributes(const CompositeDataBuffer& input, DataBuffer& output, DataBuffer::size_type index) const;
+
+    private:
+        void load_hypercube_edge_vectors(PerlinNoiseData& data) const;
+
+        static void get_point_permutations(std::vector<int>& dimension_starts, int dimensions, std::vector<int> point, std::vector<std::vector<int>>& points);
+        const float* get_input_point_attribute(DataBuffer::size_type index, const CompositeDataBuffer& input, int dimensions) const;
+
+        InputSocket* seed_socket_;
+        InputSocket* points_socket_;
+        OutputSocket* output_socket_;
     };
 
     template<unsigned int N>
     class HypercubeEdges
     {
     public:
+        static std::vector<signed char> edge_vectors_flattened();
         static std::vector<std::array<signed char, N>> edge_vectors();
         static std::vector<std::array<signed char, N>> get_permutations_no_zero();
     };
@@ -46,6 +64,20 @@ namespace nodes
             out.push_back(a);
         }
     };
+
+    template<unsigned int N>
+    std::vector<signed char> HypercubeEdges<N>::edge_vectors_flattened()
+    {
+        std::vector<std::array<signed char, N>> vectors(HypercubeEdges<N>::edge_vectors());
+        std::vector<signed char> out;
+
+        for(auto it = vectors.begin(); it != vectors.end(); it++)
+        {
+            out.insert(out.end(), it->begin(), it->end());
+        }
+
+        return out;
+    }
 
     /** Gets vectors which point to every edge of an N-Dimensional hypercube.  */
     template<unsigned int N>

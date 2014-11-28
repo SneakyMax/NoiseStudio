@@ -17,6 +17,7 @@ namespace noises
         void set_data_type(const ConnectionDataType& data_type);
 
         const std::vector<std::reference_wrapper<const Connection>>& connections() const;
+
         void add_connection(const Connection& connection);
         void remove_connection(const Connection& connection);
         void remove_all_connections();

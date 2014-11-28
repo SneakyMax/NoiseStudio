@@ -6,7 +6,7 @@
 
 namespace noises
 {
-    Graph::Graph() : id_counter_(0) { }
+    Graph::Graph() : id_counter_(0), in_refresh_after_(false) { }
 
     int Graph::add_node(std::unique_ptr<GraphNode> node)
     {
@@ -19,6 +19,9 @@ namespace noises
         nodes_.push_back(std::move(node));
 
         node_ref.request_recalculate_sockets();
+
+        node_ref.outputs().listen_socket_changed([this, &node_ref](const OutputSocket&) { this->refresh_after(node_ref); });
+
         return id_counter_ - 1;
     }
 
@@ -91,6 +94,25 @@ namespace noises
         id_counter_++;
 
         connections_.push_back(std::move(connection));
+    }
+
+    void Graph::connect(GraphNode &output, std::string output_name, GraphNode &input, std::string input_name)
+    {
+        connect(output.output(output_name), input.input(input_name));
+    }
+
+    void Graph::connect(GraphNode& output, GraphNode& input)
+    {
+        auto outputs = output.outputs().all_sockets();
+        auto inputs = input.inputs().all_sockets();
+
+        if(outputs.size() == 0 || outputs.size() > 1)
+            throw std::logic_error("Cannot use this overload of Graph::Connect because the output node does not have exactly one output socket.");
+
+        if(inputs.size() == 0 || inputs.size() > 1)
+            throw std::logic_error("Cannot use this overload of Graph::Connect because the output node does not have exactly one input socket.");
+
+        connect(outputs.front(), inputs.front());
     }
 
     void Graph::disconnect(InputSocket& input)
@@ -331,6 +353,34 @@ namespace noises
     {
         GraphExecutor executor(*this);
         return executor.execute();
+    }
+
+    void Graph::refresh_after(GraphNode& node)
+    {
+        if(in_refresh_after_)
+            return;
+
+        in_refresh_after_ = true;
+        refresh_after_inner(node, 0);
+        in_refresh_after_ = false;
+    }
+
+    void Graph::refresh_after_inner(GraphNode& node, std::size_t recursion_depth)
+    {
+        if(recursion_depth > 1000) // In case of node loops this would stack overflow
+            return;
+
+        for(const OutputSocket& socket : node.outputs().all_sockets())
+        {
+            for(const Connection& connection : socket.connections())
+            {
+                const GraphNode* next_const = connection.input().parent();
+                GraphNode& next = *get_node_by_id(next_const->id());
+
+                next.request_recalculate_sockets();
+                refresh_after_inner(next, recursion_depth + 1);
+            }
+        }
     }
 
     void Graph::refresh_all_sockets()

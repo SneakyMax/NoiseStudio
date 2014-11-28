@@ -5,6 +5,7 @@
 #include <functional>
 #include <memory>
 #include <algorithm>
+#include <boost/random.hpp>
 
 namespace noises
 {
@@ -59,19 +60,60 @@ namespace noises
         }
 
         template<typename T>
-        std::vector<T> concat(std::vector<T>& a, const std::vector<T>& b)
-        {
-            a.insert(a.end(), b.begin(), b.end());
-            return a;
-        }
-
-        template<typename T>
         std::vector<T> concat(const std::vector<T>& a, const std::vector<T>& b)
         {
             std::vector<T> out;
             out.insert(out.end(), a.begin(), a.end());
             out.insert(out.end(), b.begin(), b.end());
             return out;
+        }
+
+        template<typename T>
+        std::vector<T> concat(const std::vector<T>& a, const std::vector<T>& b, const std::vector<T>& c)
+        {
+            std::vector<T> out;
+            out.insert(out.end(), a.begin(), a.end());
+            out.insert(out.end(), b.begin(), b.end());
+            out.insert(out.end(), c.begin(), c.end());
+            return out;
+        }
+
+        template<typename T>
+        std::vector<T> concat(const std::vector<T>& a, const std::vector<T>& b, const std::vector<T>& c, const std::vector<T>& d)
+        {
+            std::vector<T> out;
+            out.insert(out.end(), a.begin(), a.end());
+            out.insert(out.end(), b.begin(), b.end());
+            out.insert(out.end(), c.begin(), c.end());
+            out.insert(out.end(), d.begin(), d.end());
+            return out;
+        }
+
+        template<typename T, typename RNG>
+        void shuffle(std::vector<T>& items, RNG& rng)
+        {
+            boost::random::uniform_real_distribution<> distribution(0, 1);
+            for(int i = items.size() - 1; i > 0; i--)
+            {
+                int j = std::round(distribution(rng) * i);
+                std::swap(items[j], items[i]);
+            }
+        }
+
+        template<typename T, typename RNG>
+        void shuffle_group(std::vector<T>& items, RNG& rng, std::size_t group_size)
+        {
+            boost::random::uniform_real_distribution<> distribution(0, 1);
+            for(int i = std::floor(items.size() / group_size) - 1; i > 0; i--)
+            {
+                int from = i * group_size;
+                int to = std::round(distribution(rng) * i * group_size);
+
+                for(int j = 0; j < group_size; j++)
+                {
+                    std::swap(items[from + j], items[to + j]);
+                }
+            }
         }
     }
 }
