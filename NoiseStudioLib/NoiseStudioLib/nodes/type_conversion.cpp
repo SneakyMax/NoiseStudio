@@ -73,6 +73,10 @@ namespace nodes {
         {
             change_type<TSource, unsigned char>(input, output, socket_type, input_socket, output_socket);
         }
+        else if(output_type.is<unsigned int>())
+        {
+            change_type<TSource, unsigned int>(input, output, socket_type, input_socket, output_socket);
+        }
     }
 
     TypeConversion::TypeConversion() :
@@ -131,6 +135,10 @@ namespace nodes {
         {
             change_type<unsigned char>(input, output, socket_type, *input_socket_, *output_socket_);
         }
+        else if(input_type.is<unsigned int>())
+        {
+            change_type<unsigned int>(input, output, socket_type, *input_socket_, *output_socket_);
+        }
     }
 
     void TypeConversion::recalculate_sockets()
@@ -168,6 +176,8 @@ namespace nodes {
                 return ConnectionDataType::dynamic<double>(dimensions);
             case TypeConversionTargetType::uchar_t:
                 return ConnectionDataType::dynamic<unsigned char>(dimensions);
+            case TypeConversionTargetType::uint_t:
+                return ConnectionDataType::dynamic<unsigned int>(dimensions);
         }
 
         throw std::invalid_argument("Unsupported type " + boost::lexical_cast<std::string>(static_cast<int>(target)));

@@ -27,7 +27,8 @@ SOURCES += \
     nodes/math.cpp \
     nodes/blank_grid.cpp \
     nodes/mappings/pixel_mapping.cpp \
-    nodes/type_conversion.cpp
+    nodes/type_conversion.cpp \
+    nodes/mappings/unit_square_mapping.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
@@ -62,7 +63,8 @@ HEADERS += \
     nodes/blank_grid.h \
     attribute_info.h \
     nodes/mappings/pixel_mapping.h \
-    nodes/type_conversion.h
+    nodes/type_conversion.h \
+    nodes/mappings/unit_square_mapping.h
 
 header_files.path = $$OUT_PWD/lib
 header_files.files = $$HEADERS

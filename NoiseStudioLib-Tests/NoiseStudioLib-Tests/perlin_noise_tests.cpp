@@ -4,8 +4,9 @@
 #include <graph.h>
 #include <nodes/blank_grid.h>
 #include <nodes/constant_value.h>
-#include <nodes/mappings/pixel_mapping.h>
+#include <nodes/mappings/unit_square_mapping.h>
 #include <graph_outputs.h>
+#include <nodes/type_conversion.h>
 
 using namespace noises;
 using namespace noises::nodes;
@@ -28,25 +29,46 @@ TEST_CASE("Getting permutations of hypercube", "")
 
 TEST_CASE("Basic 2-dimensional noise", "")
 {
-    return;
     Graph graph;
 
     BlankGrid& grid = graph.add_node<BlankGrid>();
     grid.set_size(10, 10);
 
-    PixelMapping& mapping = graph.add_node<PixelMapping>();
+    UnitSquareMapping& mapping = graph.add_node<UnitSquareMapping>();
+    TypeConversion& mapping_to_noise = graph.add_node<TypeConversion>();
+    mapping_to_noise.set_type(TypeConversionTargetType::float_t);
 
     ConstantValue& seed = graph.add_node<ConstantValue>();
-    seed.set_value_single(5);
+    seed.set_value_single(5l);
 
     PerlinNoise& noise = graph.add_node<PerlinNoise>();
 
     GraphNode& output_node = graph.add_attribute_output("Output");
 
-    graph.connect(seed.output("Value"), noise.input("Seed"));
-    graph.connect(grid.output("Grid"), mapping.input("Grid"));
-    graph.connect(mapping.output("Mapped"), noise.input("Points"));
-    graph.connect(noise.output("Output"), output_node.input("Input"));
+    graph.connect(grid, mapping);
+
+    graph.connect(mapping, mapping_to_noise);
+
+    graph.connect(seed, noise, "Seed");
+    graph.connect(mapping_to_noise, noise, "Points");
+
+    graph.connect(noise, output_node);
 
     GraphOutputs outputs = graph.execute();
+
+    std::vector<float> out = outputs.get_attribute_all_vector<float>("Output");
+
+    REQUIRE(out.size() == 100);
+
+    bool has_all_zeros = true;
+    for(std::size_t i = 0; i < out.size(); i++)
+    {
+        REQUIRE(out[i] <= 1);
+        REQUIRE(out[i] >= -1);
+
+        if(out[i] != 0)
+            has_all_zeros = false;
+    }
+
+    REQUIRE_FALSE(has_all_zeros);
 }

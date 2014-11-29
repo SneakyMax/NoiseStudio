@@ -22,7 +22,7 @@ namespace nodes
         void execute_attributes(const CompositeDataBuffer& input, DataBuffer& output, DataBuffer::size_type index) const;
 
     private:
-        void load_hypercube_edge_vectors(PerlinNoiseData& data) const;
+        void load_hypercube_edge_vectors(PerlinNoiseData& data, int dimensions) const;
 
         static void get_point_permutations(std::vector<int>& dimension_starts, int dimensions, std::vector<int> point, std::vector<std::vector<int>>& points);
         const float* get_input_point_attribute(DataBuffer::size_type index, const CompositeDataBuffer& input, int dimensions) const;

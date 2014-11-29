@@ -107,7 +107,7 @@ namespace noises
             for(int i = std::floor(items.size() / group_size) - 1; i > 0; i--)
             {
                 int from = i * group_size;
-                int to = std::round(distribution(rng) * i * group_size);
+                int to = std::round(distribution(rng) * i) * group_size;
 
                 for(int j = 0; j < group_size; j++)
                 {

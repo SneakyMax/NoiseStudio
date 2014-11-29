@@ -106,13 +106,33 @@ namespace noises
         auto outputs = output.outputs().all_sockets();
         auto inputs = input.inputs().all_sockets();
 
-        if(outputs.size() == 0 || outputs.size() > 1)
+        if(outputs.size() != 1)
             throw std::logic_error("Cannot use this overload of Graph::Connect because the output node does not have exactly one output socket.");
 
-        if(inputs.size() == 0 || inputs.size() > 1)
-            throw std::logic_error("Cannot use this overload of Graph::Connect because the output node does not have exactly one input socket.");
+        if(inputs.size() != 1)
+            throw std::logic_error("Cannot use this overload of Graph::Connect because the input node does not have exactly one input socket.");
 
         connect(outputs.front(), inputs.front());
+    }
+
+    void Graph::connect(GraphNode &output, std::string output_name, GraphNode &input)
+    {
+        auto inputs = input.inputs().all_sockets();
+
+        if(inputs.size() != 1)
+            throw std::logic_error("Cannot use this overload of Graph::Connect because the input node does not have exactly one input socket.");
+
+        connect(output.output(output_name), inputs.front());
+    }
+
+    void Graph::connect(GraphNode &output, GraphNode &input, std::string input_name)
+    {
+        auto outputs = output.outputs().all_sockets();
+
+        if(outputs.size() != 1)
+            throw std::logic_error("Cannot use this overload of Graph::Connect because the output node does not have exactly one output socket.");
+
+        connect(outputs.front(), input.input(input_name));
     }
 
     void Graph::disconnect(InputSocket& input)

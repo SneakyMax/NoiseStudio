@@ -55,6 +55,9 @@ namespace noises
         /** Connects the output of a node to the input of another node. This overload can only be used if the output has one output socket and the input has one input socket. */
         void connect(GraphNode& output, GraphNode& input);
 
+        void connect(GraphNode& output, GraphNode& input, std::string input_name);
+        void connect(GraphNode& output, std::string output_name, GraphNode& input);
+
         /** Disconnects the connection for an input socket. **/
         void disconnect(InputSocket& input);
 

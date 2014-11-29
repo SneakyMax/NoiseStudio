@@ -12,7 +12,8 @@ namespace nodes {
         long_t,
         float_t,
         double_t,
-        uchar_t
+        uchar_t,
+        uint_t
     };
 
     class TypeConversion : public GraphNode
