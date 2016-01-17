@@ -109,7 +109,7 @@ namespace noises
                 int from = i * group_size;
                 int to = std::round(distribution(rng) * i) * group_size;
 
-                for(int j = 0; j < group_size; j++)
+                for(std::size_t j = 0; j < group_size; j++)
                 {
                     std::swap(items[from + j], items[to + j]);
                 }

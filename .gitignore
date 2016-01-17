@@ -13,3 +13,8 @@
 *.user
 /cloc.exe
 *.autosave
+/NoiseStudio/build-NoiseStudio-Desktop_Qt_5_3_MinGW_32bit-Debug
+/NoiseStudioLib/NoiseStudioLib/build-NoiseStudioLib-Desktop_Qt_5_5_1_MinGW_32bit-Debug
+/NoiseStudio/NoiseStudio/build-NoiseStudio-Desktop_Qt_5_5_1_MinGW_32bit-Debug
+/NoiseStudio/NoiseStudio/NoiseStudio.pro.user.3.3-pre1
+/NoiseStudioLib/NoiseStudioLib/NoiseStudioLib.pro.user.3.3-pre1

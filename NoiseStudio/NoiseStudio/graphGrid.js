@@ -1,18 +1,18 @@
-var graph = {
-    scale: 70,
-    scaleFactor: 70, //70px for 1 "unit"
-    translation: { left: 0, top: 0 },
-    distance: 1
-};
+var graph;
 
 /** Public **/
 
-function initGrid(canvas) {
+function initGrid(Graph, canvas) {
+    graph = Graph.getModel();
+
     graph.canvas = canvas;
     graph.context = canvas.getContext("2d");
     graph.context.lineWidth = 1;
 
     drawGrid();
+
+    Graph.onScaleChanged(redraw);
+    Graph.onTranslationChanged(redraw);
 }
 
 function drawGrid() {
@@ -32,38 +32,6 @@ function drawGrid() {
     drawMinorGridlines();
     drawMajorGridlines();
     drawAxes();
-}
-
-function zoom(wheelEvent) {
-    var units = wheelEvent.angleDelta.y,
-        modifier = 1 / 2500;
-
-    graph.distance += -1 * units * modifier;
-    graph.distance = Math.max(0.00001, graph.distance);
-
-    graph.scale = (1 / graph.distance) * graph.scaleFactor;
-
-    redraw();
-}
-
-function handleMousePress(mouse) {
-    if(mouse.button !== Qt.MiddleButton)
-        return;
-
-    graph.startTranslation = { left: graph.translation.left, top: graph.translation.top };
-    graph.startDragPosition = { x: mouse.x, y: mouse.y };
-}
-
-function handleMouseMove(mouse) {
-    if(!(mouse.buttons & Qt.MiddleButton))
-        return;
-
-    var delta = { left: mouse.x - graph.startDragPosition.x, top: mouse.y - graph.startDragPosition.y };
-    var deltaLocal = { left: delta.left / graph.scale, top: delta.top / graph.scale };
-
-    graph.translation = { left: graph.startTranslation.left + deltaLocal.left, top: graph.startTranslation.top + deltaLocal.top };
-
-    redraw();
 }
 
 /** Private **/

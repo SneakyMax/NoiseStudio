@@ -88,16 +88,16 @@ namespace nodes
         std::vector<std::array<signed char, N - 1>> without_zero = HypercubeEdges<N - 1>::get_permutations_no_zero();
 
         // Put the 0 at each position in the array
-        for(int i = 0; i < N; i++)
+        for(unsigned int i = 0; i < N; i++)
         {
             // Using all permutations without the zero
-            for(int j = 0; j < without_zero.size(); j++)
+            for(std::size_t j = 0; j < without_zero.size(); j++)
             {
                 std::array<signed char, N - 1>& without = without_zero[j];
                 std::array<signed char, N> a;
                 a[i] = 0;
 
-                for(int q = 0, p = 0; q < N - 1; q++, p++)
+                for(unsigned int q = 0, p = 0; q < N - 1; q++, p++)
                 {
                     if(q == i)
                         p++;

@@ -1,8 +1,10 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
+        <file>GraphNode.qml</file>
     </qresource>
     <qresource prefix="/scripts">
         <file>graphGrid.js</file>
+        <file>graph.js</file>
     </qresource>
 </RCC>
